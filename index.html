@@ -1148,6 +1148,7 @@ function abrirEquipoConfirmado(key) {
   }
   setTabVisible('asistencia');
   document.querySelectorAll('#tabs-e .tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  setTimeout(restaurarBorrador, 400);   // recupera lo que el entrenador dejó sin guardar
 }
 
 function volverEquipos() {
@@ -1634,6 +1635,7 @@ async function guardar(tipo) {
 
     const envio = await flushGas();
     actualizarStatsAuto();
+    borrarBorrador(tipo);               // ya está a salvo (enviado o en cola)
     if (envio.pendientes) {
       toast('📶 Sin conexión: guardado en este móvil. Se enviará solo al recuperar cobertura.', true);
     } else {
@@ -2331,6 +2333,93 @@ async function cargarVisitas() {
   }
 }
 enviarVisita('app', false);
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// BORRADOR AUTOMÁTICO · lo que el entrenador escribe se guarda en su móvil al
+// instante y se recupera si cierra la app sin pulsar Guardar. Se borra al guardar.
+// ══════════════════════════════════════════════════════════════════════════════
+const BORRADOR_PREFIJOS = {
+  asistencia:'as-', valoracion:'va-', 'conflicto-e':'ce-', 'stats-semana':'ss-', alineacion:'al-',
+  'conflicto-p':'cp-', quejas:'qu-', tarjetas:'ta-', padres:'pa-', 'stats-partido':'sp-'
+};
+const BORRADOR_TODOS = ['as-','va-','ce-','ss-','al-','cp-','qu-','ta-','pa-','sp-','cv-'];
+const BORRADOR_DIAS = 7;
+let _borradorTimer = null, _restaurando = false, _tocados = new Set();   // solo lo que el entrenador ha tocado
+
+function claveBorrador() { return equipoActual ? 'rcd_borrador_' + equipoActual.id : null; }
+function campoBorrador(el) {
+  if (!el || el.type === 'password' || el.type === 'file' || el.type === 'button') return null;
+  const nom = el.type === 'radio' || el.type === 'checkbox' ? (el.name || el.id) : el.id;
+  if (!nom || !BORRADOR_TODOS.some(p => nom.indexOf(p) === 0)) return null;
+  return nom;
+}
+function leerBorrador() {
+  const k = claveBorrador(); if (!k) return null;
+  try {
+    const b = JSON.parse(localStorage.getItem(k) || 'null');
+    if (!b || !b.t || Date.now() - b.t > BORRADOR_DIAS * 864e5) return null;
+    return b;
+  } catch(e) { return null; }
+}
+function guardarBorrador() {
+  const k = claveBorrador(); if (!k || _restaurando) return;
+  const campos = {};
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    const nom = campoBorrador(el); if (!nom || !_tocados.has(nom)) return;
+    if (el.type === 'radio')         { if (el.checked) campos['r|' + nom] = el.value; }
+    else if (el.type === 'checkbox') { if (el.checked) (campos['c|' + nom] = campos['c|' + nom] || []).push(el.value || 'on'); }
+    else if (el.value !== '' && el.value != null) campos['v|' + nom] = el.value;
+  });
+  try {
+    if (Object.keys(campos).length) localStorage.setItem(k, JSON.stringify({ t: Date.now(), campos }));
+    else localStorage.removeItem(k);
+  } catch(e) {}
+}
+function restaurarBorrador() {
+  _tocados = new Set();
+  const b = leerBorrador(); if (!b) return;
+  Object.keys(b.campos).forEach(key => _tocados.add(key.slice(2)));
+  _restaurando = true;
+  let n = 0;
+  Object.keys(b.campos).forEach(key => {
+    const tipo = key.slice(0, 1), nom = key.slice(2), val = b.campos[key];
+    try {
+      if (tipo === 'v') {
+        const el = document.getElementById(nom);
+        if (el && el.value !== val) { el.value = val; el.dispatchEvent(new Event('input', {bubbles:true})); el.dispatchEvent(new Event('change', {bubbles:true})); n++; }
+      } else if (tipo === 'r') {
+        const el = document.querySelector(`input[type="radio"][name="${CSS.escape(nom)}"][value="${CSS.escape(val)}"]`);
+        if (el && !el.checked) { el.checked = true; el.dispatchEvent(new Event('change', {bubbles:true})); if (el.onclick) try { el.onclick(); } catch(e) {} n++; }
+      } else if (tipo === 'c') {
+        (val || []).forEach(v2 => {
+          const el = document.querySelector(`input[type="checkbox"][name="${CSS.escape(nom)}"][value="${CSS.escape(v2)}"]`) ||
+                     document.querySelector(`input[type="checkbox"]#${CSS.escape(nom)}`);
+          if (el && !el.checked) { el.checked = true; el.dispatchEvent(new Event('change', {bubbles:true})); n++; }
+        });
+      }
+    } catch(e) {}
+  });
+  _restaurando = false;
+  if (n) toast('📝 Se ha recuperado lo que dejaste sin guardar. Revísalo y pulsa Guardar.');
+}
+function borrarBorrador(tipo) {
+  const b = leerBorrador(), k = claveBorrador(); if (!b || !k) return;
+  const pref = BORRADOR_PREFIJOS[tipo]; if (!pref) return;
+  Object.keys(b.campos).forEach(key => { if (key.slice(2).indexOf(pref) === 0) delete b.campos[key]; });
+  [..._tocados].forEach(nom => { if (nom.indexOf(pref) === 0) _tocados.delete(nom); });
+  try {
+    if (Object.keys(b.campos).length) localStorage.setItem(k, JSON.stringify(b)); else localStorage.removeItem(k);
+  } catch(e) {}
+}
+['input','change'].forEach(ev => document.addEventListener(ev, e => {
+  if (!equipoActual || _restaurando || !e.isTrusted) return;
+  const nom = campoBorrador(e.target); if (!nom) return;
+  _tocados.add(nom);
+  clearTimeout(_borradorTimer);
+  _borradorTimer = setTimeout(guardarBorrador, 400);
+}, true));
+window.addEventListener('pagehide', () => { if (equipoActual) guardarBorrador(); });
 
 // ── Stats partido — acceso con contraseña ────────────────────────────────────
 const STATS_PW_H = '034cbb657c3ece7581cc34cab50278ec54380a974c1985ab9bd29cf5e83e5257';
