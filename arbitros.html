@@ -76,7 +76,10 @@ body.locked > *:not(#pw-gate){display:none!important}
 <div id="pw-gate">
   <div class="g-ball">⚽</div>
   <div class="g-title">FFIB · Experiencia del Árbitro</div>
+  <div class="g-club" id="g-club" style="font-size:17px;font-weight:900;margin:8px 0 2px">RCD Santa Ponça</div>
+  <div class="g-campo" id="g-campo" style="font-size:13px;opacity:.85;margin-bottom:6px">📍 Polideportivo Municipal de Santa Ponça</div>
   <div class="g-sub">Acceso restringido · Temporada 2026/2027</div>
+  <div id="g-demo" style="display:none;background:#FEF3C7;color:#92400E;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;margin-bottom:14px">🧪 Versión de revisión · las respuestas no se guardan</div>
   <div class="g-card">
     <label for="g-pw">Contraseña de acceso</label>
     <input type="password" id="g-pw" placeholder="Introduce la contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter')gateCheck()">
@@ -86,6 +89,14 @@ body.locked > *:not(#pw-gate){display:none!important}
   <div class="g-firma">Jesús Neftalí Martínez Arredondo<br>Psicólogo General Sanitario · B-03305</div>
 </div>
 <script>
+// Parámetros del enlace: ?club=…&campo=…&demo=1
+const _PQ = new URLSearchParams(location.search);
+const CLUB  = (_PQ.get('club')  || 'RCD Santa Ponça').trim();
+const CAMPO = (_PQ.get('campo') || 'Polideportivo Municipal de Santa Ponça').trim();
+const DEMO  = _PQ.get('demo') === '1';
+document.getElementById('g-club').textContent  = CLUB;
+document.getElementById('g-campo').textContent = '📍 ' + CAMPO;
+if (DEMO) document.getElementById('g-demo').style.display = 'block';
 const GATE_HASH='1aa420b2d17475a324e6bbe198366e7907fd8cdca68304c07f1495a46ea0a5b2';
 function gateOpen(){document.body.classList.remove('locked');var g=document.getElementById('pw-gate');if(g)g.remove();}
 async function gateHash(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
@@ -98,6 +109,7 @@ try{if(sessionStorage.getItem('ffib_ok')==='1')gateOpen();}catch(e){}
     <div class="logo">⚽</div>
     <div>
       <div class="htitle">FFIB · Experiencia del Árbitro en el Campo</div>
+      <div class="hsub" id="h-club" style="font-weight:700;opacity:1"></div>
       <div class="hsub">Federació de Futbol de les Illes Balears · Psicología Deportiva · Neftalí Martínez B-03305</div>
     </div>
   </div>
@@ -550,6 +562,13 @@ const ARB_ID = 'arb_' + Date.now() + '_' + Math.random().toString(36).slice(2,8)
 const CAMPOS_TEXTO = ['d-fecha','d-hora','d-campo','d-municipio','d-cat','d-tipo','d-local','d-visit','d-result','d-arbitro',
   'amb-incid-txt','ent-obs','jug-antidep-txt','cap-obs','riesgo-txt','pos-txt','mejora-txt','coment-txt'];
 
+document.addEventListener('DOMContentLoaded', () => {
+  const hc = document.getElementById('h-club'); if (hc) hc.textContent = CLUB + ' · 📍 ' + CAMPO + (DEMO ? ' · 🧪 Versión de revisión' : '');
+  const loc = document.getElementById('d-local'); if (loc && !loc.value) loc.value = CLUB;
+  const cam = document.getElementById('d-campo'); if (cam && !cam.value) cam.value = CAMPO;
+  if (DEMO) { try { localStorage.removeItem('ffib_pendiente_v1'); } catch(e) {} }
+});
+
 function recogerCampos() {
   CAMPOS_TEXTO.forEach(id => { const el = document.getElementById(id); if (el) _d[id] = el.value.trim(); });
 }
@@ -568,6 +587,11 @@ async function postArbitro(payload) {
 
 async function enviarArbitro(resumen) {
   const est = document.getElementById('envio-estado');
+  if (DEMO) {
+    if (est) { est.style.background='#FEF3C7'; est.style.color='#92400E';
+      est.textContent='🧪 Versión de revisión: este resultado es de ejemplo y las respuestas no se han guardado.'; }
+    return;
+  }
   const btn = document.getElementById('btn-enviar');
   const payload = { ficha: 'FFIB_Arbitros', id: ARB_ID, datos: _d, resumen: resumen, timestamp: new Date().toISOString() };
   try { localStorage.setItem(COLA_ARB, JSON.stringify(payload)); } catch(e) {}   // copia de seguridad
@@ -587,6 +611,7 @@ async function enviarArbitro(resumen) {
 
 // Reenvío automático si quedó algo pendiente (al abrir la página o al volver la conexión)
 async function reenviarArbPendiente() {
+  if (typeof DEMO !== 'undefined' && DEMO) return;
   let p = null;
   try { p = JSON.parse(localStorage.getItem(COLA_ARB) || 'null'); } catch(e) {}
   if (!p) return;
