@@ -2449,7 +2449,7 @@ async function cargarEstadosCasos() {
   try {
     const res = await fetch(GAS + '?accion=casos&clave=' + encodeURIComponent(_clNefta) + '&t=' + Date.now(), { cache: 'no-store' });
     const d = await res.json();
-    if (d && d.ok) _casosEstado = d.estados || {};
+    if (d && d.ok) { _casosEstado = d.estados || {}; _incidEstado = d.incidencias || {}; }
   } catch(e) { console.log('Estados de casos:', e.message); }
   aplicarEstadosCasos();
 }
@@ -2568,21 +2568,40 @@ function detallesJugador(jug) {
       const r = registroCompleto(det);
       const PO = pautaOperativa(det.ficha, r);
       const pautas = [PO.objetivo];
+      const id = idIncidencia(det.ficha, det.r);
       return {
-        ficha: det.ficha, titulo: TITULO_FICHA[det.ficha] || det.ficha,
+        id: id, ficha: det.ficha, titulo: TITULO_FICHA[det.ficha] || det.ficha,
         fecha: fechaCorta(r.Fecha), tipo: String(r.Tipo || r.Motivo || '—'),
         grav: r.Gravedad ? String(r.Gravedad) : '', estado: String(r.Seguimiento || r.Resolucion || ''),
-        minuto: r.Minuto ? String(r.Minuto) : '', pautas: pautas, po: PO
+        minuto: r.Minuto ? String(r.Minuto) : '', pautas: pautas, po: PO,
+        decision: (_incidEstado[id] || {}).estado || '', raw: det.r
       };
     });
 }
 
+function chipDecision(dec) {
+  if (!dec) return '';
+  const ok = dec === 'Resuelta';
+  return `<span style="background:${ok?'#D1FAE5':'#FEE2E2'};color:${ok?'#065F46':'#991B1B'};border-radius:4px;padding:1px 7px;font-size:10px;font-weight:800">${ok?'✅ Resuelta':'❌ No resuelta'}</span>`;
+}
+function botonesIncidencia(d, jug) {
+  if (!isNefta) return '';
+  const idJs = d.id.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  return `<div style="display:flex;gap:6px;margin-top:6px">
+    <button onclick="event.stopPropagation(); marcarIncidencia('${idJs}','Resuelta')" style="flex:1;background:#065F46;color:#fff;border:none;border-radius:6px;padding:7px;font-weight:800;font-size:11px;cursor:pointer">✅ Resuelta</button>
+    <button onclick="event.stopPropagation(); marcarIncidencia('${idJs}','No resuelta')" style="flex:1;background:#fff;color:#991B1B;border:2px solid #991B1B;border-radius:6px;padding:7px;font-weight:800;font-size:11px;cursor:pointer">❌ No resuelta</button>
+  </div>`;
+}
 function htmlDetalles(dets, nPautas) {
   if (!dets.length) return '';
-  return dets.map(d => `<div style="border:1px solid #FECACA;border-radius:6px;padding:7px 9px;margin-top:6px;background:#FFFBFB">
+  return dets.map(d => d.decision
+    ? `<div style="border:1px solid #E5E7EB;border-radius:6px;padding:6px 9px;margin-top:6px;background:#F9FAFB;font-size:11px">
+        ⚡ <b>${d.titulo}</b> · ${escI(d.tipo)} · ${d.fecha}${d.grav?' · G'+escI(d.grav):''} &nbsp;${chipDecision(d.decision)}</div>`
+    : `<div style="border:1px solid #FECACA;border-radius:6px;padding:7px 9px;margin-top:6px;background:#FFFBFB">
       <div style="font-size:11px;font-weight:800;color:#991B1B">⚡ ${d.titulo} · ${escI(d.tipo)}</div>
       <div style="font-size:10px;color:#6B7280">${d.fecha}${d.minuto?' · min '+escI(d.minuto):''}${d.grav?' · G'+escI(d.grav):''}${d.estado?' · '+escI(d.estado):''}</div>
       <div style="margin-top:5px">${htmlPautaOperativa(d.po, true)}</div>
+      ${botonesIncidencia(d)}
     </div>`).join('');
 }
 
@@ -2596,9 +2615,45 @@ function actualizarRecomendacion() {
     box.innerHTML = 'Los datos recogidos esta semana serán revisados por el psicólogo del club. Las incidencias registradas se comentarán durante la siguiente semana para poder estudiar cada caso con la información completa. Si hay algún asunto urgente, contacta directamente con Neftalí Martínez.';
     return;
   }
-  box.innerHTML = '<div style="font-weight:800;margin-bottom:6px">Pautas para el entrenador según las incidencias registradas:</div>' +
-    items.map(({ j, d }) => `<div style="margin-bottom:8px;font-size:12px"><b>${escI(j)}</b> · ${d.titulo}: <b>${escI(d.tipo)}</b> (${d.fecha}${d.grav?', G'+escI(d.grav):''})<br>
-      <div style="margin-top:4px">${htmlPautaOperativa(d.po, true)}</div></div>`).join('');
+  const pend = items.filter(x => !x.d.decision), cerr = items.filter(x => x.d.decision);
+  box.innerHTML =
+    (pend.length
+      ? '<div style="font-weight:800;margin-bottom:6px">Pautas para el entrenador según las incidencias pendientes:</div>' +
+        pend.map(({ j, d }) => `<div style="margin-bottom:10px;font-size:12px;padding-bottom:8px;border-bottom:1px dashed #A7F3D0"><b>${escI(j)}</b> · ${d.titulo}: <b>${escI(d.tipo)}</b> (${d.fecha}${d.grav?', G'+escI(d.grav):''})<br>
+          <div style="margin-top:4px">${htmlPautaOperativa(d.po, true)}</div>${botonesIncidencia(d)}</div>`).join('')
+      : '<div style="font-weight:800;margin-bottom:6px">✅ No hay incidencias pendientes.</div>') +
+    (cerr.length
+      ? '<div style="font-weight:800;margin:10px 0 4px;color:#374151">Incidencias cerradas:</div>' +
+        cerr.map(({ j, d }) => `<div style="font-size:11px;margin-bottom:3px;color:#374151"><b>${escI(j)}</b> · ${d.titulo}: ${escI(d.tipo)} (${d.fecha}) &nbsp;${chipDecision(d.decision)}</div>`).join('')
+      : '');
+}
+
+// ── Estado de incidencias (Resuelta / No resuelta) · solo Nefta ──────────────
+let _incidEstado = {};
+function idIncidencia(ficha, r) {
+  return [ficha, String(r.Timestamp || ''), String(r.Fecha || '').slice(0,10), normNombre(r.Jugador || ''), String(r.Tipo || '')].join('|');
+}
+async function marcarIncidencia(id, estado) {
+  let det = null, jug = '';
+  Object.keys(_registrosSemana.detalles || {}).forEach(j => (_registrosSemana.detalles[j] || []).forEach(x => {
+    if (!det && idIncidencia(x.ficha, x.r) === id) { det = x; jug = j; }
+  }));
+  if (!det) return;
+  if (!confirm('¿Marcar esta incidencia de ' + jug + ' como ' + estado.toUpperCase() + '? Dejará de aparecer en las pautas pendientes.')) return;
+  try {
+    const res = await fetch(GAS, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ ficha: 'INCID_ESTADO', clave: _clNefta, id: id, estado: estado, equipoId: equipoActual.id,
+        tipo: det.ficha, timestamp: det.r.Timestamp || '', fecha: String(det.r.Fecha || '').slice(0,10), jugador: det.r.Jugador || '' }) });
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error || 'Error');
+    _incidEstado[id] = { estado: estado };
+    toast(estado === 'Resuelta' ? '✅ Incidencia marcada como resuelta' : '❌ Incidencia marcada como no resuelta');
+  } catch(e) {
+    toast('⚠️ No se pudo guardar el estado. Inténtalo de nuevo.', true);
+    return;
+  }
+  actualizarRecomendacion();
+  if (isNefta) mostrarStatsIndividuales();
 }
 
 function actualizarStatsAuto() {
@@ -2734,6 +2789,7 @@ async function recargarDatos() {
     if (d.conflictos) Object.keys(d.conflictos).forEach(j => { RS.conflictos[j] = d.conflictos[j]; });
   }
   toast('🔄 Descargando registros…');
+  if (isNefta) await cargarEstadosCasos();
   await cargarDesdeSheets(equipoActual.id, true);
   actualizarStatsAuto();
   if (isNefta) cargarIncidencias();
@@ -3526,7 +3582,7 @@ ${nV>0?`<div class="sec">RESUMEN VALORACIÓN</div>
 <div style="font-size:9px;color:#6B7280;text-align:center;margin-bottom:8px">🟢 ≥4.0 · 🟡 2.5–4.0 · 🔴 &lt;2.5</div>
 ${(()=>{ const it=[]; J.forEach(j=>detallesJugador(j).forEach(d=>it.push({j,d}))); if(!it.length) return '';
   return `<div class="sec">INCIDENCIAS Y PAUTAS PARA EL ENTRENADOR</div><table><thead><tr><th style="text-align:left">Jugador</th><th style="text-align:left">Incidencia</th><th style="text-align:left">Pauta</th></tr></thead><tbody>`+
-  it.map(({j,d},i)=>`<tr><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};vertical-align:top"><b>${escI(j)}</b></td><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};vertical-align:top">${d.titulo}: <b>${escI(d.tipo)}</b><br><span style="color:#6B7280">${d.fecha}${d.minuto?' · min '+escI(d.minuto):''}${d.grav?' · G'+escI(d.grav):''}${d.estado?' · '+escI(d.estado):''}</span></td><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};color:#064E3B;vertical-align:top"><b>🎯</b> ${escI(d.po.objetivo)}<br><b>⚽ Jugador:</b> ${d.po.jugador.slice(0,2).map(escI).join(' ')}<br><b>🧑‍🏫 Entrenador:</b> ${d.po.entrenador.slice(0,2).map(escI).join(' ')}<br><b>📏</b> ${escI(d.po.medida)}</td></tr>`).join('')+`</tbody></table>`; })()}
+  it.map(({j,d},i)=>`<tr><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};vertical-align:top"><b>${escI(j)}</b></td><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};vertical-align:top">${d.titulo}: <b>${escI(d.tipo)}</b>${d.decision?' · <b style="color:'+(d.decision==='Resuelta'?'#065F46':'#991B1B')+'">'+(d.decision==='Resuelta'?'✅ Resuelta':'❌ No resuelta')+'</b>':''}<br><span style="color:#6B7280">${d.fecha}${d.minuto?' · min '+escI(d.minuto):''}${d.grav?' · G'+escI(d.grav):''}${d.estado?' · '+escI(d.estado):''}</span></td><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};color:#064E3B;vertical-align:top"><b>🎯</b> ${escI(d.po.objetivo)}<br><b>⚽ Jugador:</b> ${d.po.jugador.slice(0,2).map(escI).join(' ')}<br><b>🧑‍🏫 Entrenador:</b> ${d.po.entrenador.slice(0,2).map(escI).join(' ')}<br><b>📏</b> ${escI(d.po.medida)}</td></tr>`).join('')+`</tbody></table>`; })()}
 <div class="msg">💚 Los datos recogidos serán revisados por el psicólogo del club. Las incidencias se comentarán la siguiente semana.<br><br><b style="font-size:13px">¡¡ VAMOS VERDES !!</b></div>
 <div class="pie"><span>RCD Santa Ponça · Psicología Deportiva · B-03305</span><span>Neftalí Martínez Arredondo</span><span>Temporada 2026/2027</span></div>
 <div class="lopd">${lopd}</div>
