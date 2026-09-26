@@ -530,7 +530,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="card-title p">🟨 Árbitros FFIB · Evaluaciones en tiempo real</div>
         <div class="alert-info" style="font-size:12px;margin-bottom:10px">
           Los árbitros solo ven su cuestionario. Enlace para enviarles:<br>
-          <b id="arb-link">https://rcdsantaponsa2026.netlify.app/arbitros.html</b> · Contraseña: <b>FFIB2026</b>
+          <b id="arb-link"></b> · Contraseña: <b>FFIB2026</b>
           <button onclick="copiarEnlaceArb()" style="margin-left:6px;background:var(--azul);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer">📋 Copiar mensaje</button>
         </div>
         <div id="arb-login">
@@ -926,31 +926,20 @@ async function descargarInforme(contenido, nombre) {
   }
   return false;
 }
-// Destinatarios de email: siempre Nefta + entrenador del equipo + club
-// Emails por equipo (entrenador de cada categoría)
-const EMAILS_ENTRENADORES = {
-  Juvenil:           'javipomu@outlook.es',
-  InfantilF11:       'entrenador.infantil@rcd-santaponca.es',
-  AlevinA:           'entrenador.alevina@rcd-santaponca.es',
-  AlevinB:           'entrenador.alevinb@rcd-santaponca.es',
-  BenjaminA:         'joseluismm@outlook.com',
-  BenjaminB:         'entrenador.benjaminb@rcd-santaponca.es',
-  BenjaminC:         'javier.p@rcd-santaponca.es',
-  BenjaminForm:      'entrenador.benjaminform@rcd-santaponca.es',
-  PreBenjaminA:      'entrenador.prebenja@rcd-santaponca.es',
-  PreBenjaminB:      'joseluismm@outlook.com',
-  Escoleta:          'entrenador.escoleta@rcd-santaponca.es',
-  Porteros:          'entrenador.porteros@rcd-santaponca.es',
-};
-const PASSWORD      = 'SantaPonsa2026';  // contraseña para todos
-const PASSWORD_NEFTA = 'Maddox0102';   // contraseña extra para Nefta (botones admin)
+// (Los emails de los entrenadores viven solo en el script de Google, no en la web)
+const PASSWORD_H       = '1d97a7026ed3005fc8ec7525276f9512d28091653550177c9e1f78975a3e78b2';  // contraseña general (cifrada)
+const PASSWORD_NEFTA_H = '034cbb657c3ece7581cc34cab50278ec54380a974c1985ab9bd29cf5e83e5257';  // contraseña Nefta (cifrada)
+async function sha256(t) {
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
+  return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2,'0')).join('');
+}
 let isNefta = false;
 
 // ── EQUIPOS ──────────────────────────────────────────────────────────────────
 const EQUIPOS = {
   juvenil:    {
     nombre:'Juvenil', detalle:'División de Honor Mallorca', id:'Juvenil',
-    entrenador:'Javier Pozo Muñoz', email:'javipomu@outlook.es', password:'Juvenil2026',
+    entrenador:'Javier Pozo Muñoz', password:'fc62e5610982d399553aa7d933920f6f60ebad4027ae8e6b978c0e49061e365e',
     jugadores:['Alejandro T.','Yanis T.','Izan Á.','Alex M.','Adolfo P.','Unai V.','Adrián R.C.','Adrián R.A.','Juan V.','Marek P.','Iker P.','Joaquín V.','Mario C.','Angel R.','Tynan S.','Jacob H.','Adrián S.','Gaspar R.'],
     horarios:'Por confirmar'
   },
@@ -966,7 +955,7 @@ const EQUIPOS = {
   },
   alevinB:    {
     nombre:'Alevín B', detalle:'Sub-11 Preferente Mallorca', id:'AlevinB',
-    entrenador:'Roberto Ferrer', email:'rober.ferrerb@gmail.com', password:'AlevinB2026',
+    entrenador:'Roberto Ferrer', password:'7a1fbe5e4311ff6000f7c7f0580cce56c73103e8d422af8c2699cc80baf13e24',
     jugadores:['Álvaro S. G.','Valentino V. B.','Dan D. B. B.','Alex C. C.',
                'Alejandro F. M.','Hugo M. G.','Manu N. S.','Lucas S. M.',
                'Owen V. C.','Unax'],
@@ -974,7 +963,7 @@ const EQUIPOS = {
   },
   benjaminA:  {
     nombre:'Benjamín A', detalle:'Benjamines Mallorca', id:'BenjaminA',
-    entrenador:'Guyu', password:'Guyu2026',
+    entrenador:'Guyu', password:'c474dfe13c5a2b041f1d1a754444a28f67a8b82f3a5f868d2442603fd1e7f998',
     jugadores:['Leo','Tiziano','Hugo','Joel','Gonzalo','Xisco','Nico','Marcos','Cristiano','Aaron','Sergio','Noel'],
     horarios:'Mar · Campo B · 17:45–19:15 | Jue · Campo F · 17:30–19:00 | Vie · Campo B · 17:00–18:15'
   },
@@ -985,7 +974,7 @@ const EQUIPOS = {
   },
   benjaminC:  {
     nombre:'Benjamín C', detalle:'Benjamines Mallorca', id:'BenjaminC',
-    entrenador:'Javier P.', password:'SantaPonsa2026',
+    entrenador:'Javier P.', password:'1d97a7026ed3005fc8ec7525276f9512d28091653550177c9e1f78975a3e78b2',
     jugadores:['Javi V.','Erik T.','Andreas C. M.','Cristian D.','Maddox M.','Mattias M.','Adam C.','Salah A. J. W.','Lorenzo W.','José Luis V. C.','Martín A.','Adrián M.','Oliver D. A.','Antonio S.'],
     horarios:'Mar · Campo C · 17:30–19:00 | Jue · Campo B · 17:30–19:00 | Vie · Sin campo · 17:30–19:00'
   },
@@ -1001,7 +990,7 @@ const EQUIPOS = {
   },
   prebenB:    {
     nombre:'Pre-Benjamín B', detalle:'Pre-Benjamines Mallorca', id:'PreBenjaminB',
-    entrenador:'Guyu', email:'joseluismm@outlook.com', password:'Guyu2026',
+    entrenador:'Guyu', password:'c474dfe13c5a2b041f1d1a754444a28f67a8b82f3a5f868d2442603fd1e7f998',
     jugadores:['Mateo','Mario','Elias','Joan Manuel','Lucas','Cheik','Juan','Ruben','Martin','Thomas','Enzo D.','Enzo C.','Ian'],
     horarios:'Mar · Campo B · 16:30–17:45 | Jue · Sin campo · 16:30–17:45'
   },
@@ -1021,10 +1010,11 @@ let equipoActual = null;
 let modoActual = 'entreno';
 
 // ── CONTRASEÑA ────────────────────────────────────────────────────────────────
-function verificarPW() {
-  const pw = document.getElementById('pw-input').value;
-  if (pw === PASSWORD || pw === PASSWORD_NEFTA) {
-    isNefta = (pw === PASSWORD_NEFTA);
+async function verificarPW() {
+  const h = await sha256(document.getElementById('pw-input').value);
+  if (h === PASSWORD_H || h === PASSWORD_NEFTA_H) {
+    isNefta = (h === PASSWORD_NEFTA_H);
+    if (isNefta) { try { _clNefta = document.getElementById('pw-input').value; sessionStorage.setItem('nefta_clave', _clNefta); } catch(e) {} }
     document.getElementById('pantalla-inicio').style.display = 'none';
     document.getElementById('pantalla-equipos').style.display = 'block';
     if (isNefta) mostrarAlertaCasosGraves();
@@ -1063,9 +1053,9 @@ function mostrarModalPassword(key, eq) {
       <div style="font-size:12px;color:#6B7280;text-align:center;margin-bottom:20px">Acceso restringido · Entrenador: ${eq.entrenador}</div>
       <input type="password" id="modal-pw-input" placeholder="Contraseña del equipo"
         style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:12px 14px;font-size:15px;font-family:inherit;outline:none;margin-bottom:8px"
-        onkeydown="if(event.key==='Enter') verificarModalPW('${key}','${eq.password}')">
+        onkeydown="if(event.key==='Enter') verificarModalPW('${key}')">
       <div id="modal-pw-err" style="color:#991B1B;font-size:12px;margin-bottom:10px;display:none;text-align:center">❌ Contraseña incorrecta</div>
-      <button onclick="verificarModalPW('${key}','${eq.password}')"
+      <button onclick="verificarModalPW('${key}')"
         style="width:100%;background:#1a5c2e;color:#fff;border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">
         Acceder
       </button>
@@ -1078,10 +1068,11 @@ function mostrarModalPassword(key, eq) {
   setTimeout(() => document.getElementById('modal-pw-input')?.focus(), 100);
 }
 
-function verificarModalPW(key, pw) {
+async function verificarModalPW(key) {
   const input = document.getElementById('modal-pw-input');
   if (!input) return;
-  if (input.value === pw) {
+  const eqPW = EQUIPOS[key] && EQUIPOS[key].password;
+  if (eqPW && (await sha256(input.value)) === eqPW) {
     document.getElementById('modal-pw').remove();
     abrirEquipoConfirmado(key);
   } else {
@@ -1909,7 +1900,9 @@ function generarConv() {
 let _arbTimer = null;
 let _arbClave = '';
 
+function urlArbitros() { return location.href.replace(/[#?].*$/, '').replace(/[^\/]*$/, '') + 'arbitros.html'; }
 function abrirArbitros(btn) {
+  const al = document.getElementById('arb-link'); if (al) al.textContent = urlArbitros();
   setTab('arbitros', btn);
   try { _arbClave = _arbClave || sessionStorage.getItem('arb_clave') || ''; } catch(e) {}
   if (_arbClave) cargarArbitros();
@@ -1918,7 +1911,7 @@ function abrirArbitros(btn) {
 function copiarEnlaceArb() {
   const txt = 'Hola, te comparto el cuestionario de experiencia del árbitro (FFIB). ' +
     'Es confidencial y se tarda unos 5 minutos:\n' +
-    'https://rcdsantaponsa2026.netlify.app/arbitros.html\nContraseña: FFIB2026\nGracias.';
+    urlArbitros() + '\nContraseña: FFIB2026\nGracias.';
   navigator.clipboard.writeText(txt).then(() => toast('✅ Mensaje copiado'));
 }
 
@@ -2045,77 +2038,162 @@ function pintarIncidLogin(err) {
 
 function escI(t) { return String(t==null?'':t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-// Pautas conductuales según tipo de incidencia (marco AFC / ABA aplicado al deporte)
-function pautasIncidencia(tipo, r) {
-  const p = [];
-  const txt = (String(r['Tipo']||'') + ' ' + String(r['Descripcion']||'') + ' ' + String(r['Motivo']||'') + ' ' + String(r['Tipo conducta']||'')).toLowerCase();
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PAUTA OPERATIVA · conducta objetivo observable + qué hace el jugador +
+// qué hace el entrenador + cómo se mide (marco AFC / ABA aplicado al deporte)
+// ══════════════════════════════════════════════════════════════════════════════
+function pautaOperativa(tipo, r) {
+  const txt  = (String(r['Tipo']||'') + ' ' + String(r['Descripcion']||'') + ' ' + String(r['Motivo']||'') + ' ' + String(r['Tipo conducta']||'')).toLowerCase();
   const grav = parseFloat(r['Gravedad']) || 0;
   const recurrente = /recurrente|2\.ª|2a vez|segunda/i.test(String(r['Patron']||''));
   const pendiente  = /pendiente|proceso|nefta/i.test(String(r['Seguimiento']||r['Resolucion']||''));
+  let P;
 
   if (tipo === 'Quejas') {
-    if (/bal[oó]n|pase|pasan|no le dan/.test(txt)) {
-      p.push('Convertir la queja en un objetivo de conducta observable: «ofrecer línea de pase» (desmarque de apoyo o de ruptura, perfil abierto hacia el balón).');
-      p.push('Enseñarlo con Entrenamiento en Habilidades Conductuales (BST: instrucción breve, modelado, ensayo y feedback inmediato; Miltenberger, 2016), en rondos o juegos reducidos donde solo se pueda recibir con la línea abierta.');
-      p.push('Reforzar de forma contingente e inmediata cada desmarque correcto («¡bien abierto!»), aunque no reciba el balón. Reforzamiento diferencial de conducta alternativa (DRA; Cooper, Heron y Heward, 2020): se refuerza el desmarque, no la queja.');
-      p.push('Si juega de lateral, darle una referencia posicional concreta (altura respecto al central y la línea de banda) y revisarla con pizarra o vídeo tras el partido.');
-      p.push('Redirigir la queja a una pregunta funcional: «¿qué puedo hacer yo para recibir más?». Ante nuevas quejas, respuesta breve y neutra, y reconducir a la tarea.');
-      p.push('A nivel grupal, reforzar los pases al compañero libre y con menos participación, sin señalar a nadie.');
-    } else if (/minuto|convoca|titular|juega poco/.test(txt)) {
-      p.push('Explicar al jugador, en privado y con criterios observables (asistencia, actitud, cumplimiento de tareas), qué necesita para ganar minutos.');
-      p.push('Fijar 1-2 metas de proceso semanales y revisarlas con él (establecimiento de metas; Locke y Latham, 2002).');
-      p.push('Feedback con enfoque de maestría: reforzar el esfuerzo y la mejora, no solo el resultado (Mastery Approach to Coaching; Smith, Smoll y Cumming, 2007).');
-    } else if (/trato|entrenador|grit/.test(txt)) {
-      p.push('Escuchar la queja sin justificarse en caliente; recoger hechos concretos (qué se dijo o hizo, cuándo).');
-      p.push('Revisar el estilo de instrucción: proporción alta de refuerzo e instrucción técnica frente a correcciones punitivas (Coach Effectiveness Training; Smith, Smoll y Curtis, 1979).');
-      p.push('Si hay familia implicada, derivar a una reunión breve con Nefta.');
-    } else {
-      p.push('Registrar la queja con hechos observables y darle una respuesta concreta al jugador en la siguiente sesión.');
-      p.push('Identificar si la queja cumple una función de atención; en ese caso, responder breve y reforzar las peticiones adecuadas (DRA).');
-    }
+    if (/bal[oó]n|pase|pasan|no le dan/.test(txt)) P = {
+      objetivo: 'Ofrecer línea de pase: desmarcarse a un espacio libre y pedir el balón con perfil abierto en cada posesión de su equipo.',
+      jugador: ['Cuando tu equipo tiene el balón, muévete a un hueco donde el compañero te vea (sin rival en medio).',
+                'Pide el balón con la mano o la voz: «¡Aquí!».',
+                'Si juegas de lateral, quédate a la altura del central hasta que el entrenador te diga que subas.',
+                'Si no te llega, vuelve a desmarcarte en lugar de quejarte.'],
+      entrenador: ['Antes de la tarea: explica y demuestra el desmarque en 30 segundos (instrucción + modelado).',
+                   'Durante un rondo o juego reducido: refuerza al instante cada desmarque correcto («¡bien abierto!»), reciba o no el balón.',
+                   'Ante una queja: respuesta neutra de una frase («desmárcate y pídela») y sigue el juego, sin discutir.',
+                   'Tras el partido: 1 minuto de pizarra con su referencia posicional.'],
+      medida: 'Contar desmarques correctos por tarea (objetivo ≥5 en un rondo de 5 min) y quejas por sesión (objetivo 0-1). Revisar en 2 semanas.',
+      refs: 'Entrenamiento en Habilidades Conductuales (Miltenberger, 2016); reforzamiento diferencial y extinción (Cooper, Heron y Heward, 2020).' };
+    else if (/minuto|convoca|titular|juega poco/.test(txt)) P = {
+      objetivo: 'Cumplir los criterios observables de convocatoria acordados con el entrenador.',
+      jugador: ['Llega puntual y completa todas las tareas del entrenamiento.',
+                'Trabaja cada semana en las 1-2 metas que acuerdes con tu entrenador.',
+                'Si quieres jugar más, pregúntale en privado: «¿qué necesito mejorar?».'],
+      entrenador: ['Explica en privado los criterios (asistencia, actitud, cumplimiento de tareas), sin comparar con compañeros.',
+                   'Acordad 1-2 metas de proceso semanales y revisadlas cada viernes.',
+                   'Refuerza el esfuerzo y la mejora, no solo el resultado.'],
+      medida: 'Registro semanal de metas cumplidas (x/2) y asistencia. Revisión quincenal con el jugador.',
+      refs: 'Establecimiento de metas (Locke y Latham, 2002); Mastery Approach to Coaching (Smith, Smoll y Cumming, 2007).' };
+    else P = {
+      objetivo: 'Expresar un desacuerdo de forma adecuada: en privado, en calma y con una propuesta.',
+      jugador: ['Espera a una pausa o al final del entrenamiento.',
+                'Habla con el entrenador a solas: cuenta qué pasó y qué propones.',
+                'En el campo, sigue jugando aunque no estés de acuerdo.'],
+      entrenador: ['Escucha 2 minutos sin justificarte y reformula lo que ha dicho.',
+                   'Da una respuesta concreta en la siguiente sesión.',
+                   'Refuerza cuando plantee una queja de forma adecuada; ante quejas en público durante el juego, respuesta breve y neutra.'],
+      medida: 'Nº de quejas en público frente a quejas planteadas en privado por semana (objetivo: 0 en público).',
+      refs: 'Reforzamiento diferencial de conducta alternativa (Cooper, Heron y Heward, 2020).' };
   } else if (tipo === 'ConflictoEntreno' || tipo === 'ConflictoPartido') {
-    if (/compa/.test(txt)) {
-      p.push('Análisis funcional A-B-C: registrar qué ocurre justo antes (tarea de contacto, pérdida de balón, turno de espera…) para identificar el antecedente más frecuente.');
-      p.push('Intervención antecedente: recordar la norma en positivo antes de las tareas con más fricción y separar a los implicados en esas tareas.');
-      p.push('Reforzar de forma específica e inmediata las interacciones cooperativas (ayudar, animar, pasar) de los implicados (DRA/DRI; Cooper, Heron y Heward, 2020).');
-      p.push('Tiempo fuera breve (1-2 min) solo si la conducta no busca escapar de la tarea; si la función es evitar el ejercicio, el tiempo fuera la refuerza.');
-    } else if (/material/.test(txt)) {
-      p.push('Instrucción clara y corta antes de recoger el material, con modelado del entrenador.');
-      p.push('Consecuencia lógica: recoger lo que ha tirado antes de continuar, sin sermón (corrección / sobrecorrección restitutiva breve).');
-      p.push('Asignarle un rol de «responsable de material» y reforzar cuando lo cumple (reforzamiento de conducta incompatible, DRI).');
-    } else if (/desmotiv|abandono|apat/.test(txt)) {
-      p.push('Conversación individual breve para identificar variables (posición, minutos, relación con compañeros, situación en casa).');
-      p.push('Metas de proceso alcanzables por sesión y refuerzo del esfuerzo, no del resultado (Smith, Smoll y Cumming, 2007; Locke y Latham, 2002).');
-      p.push('Aumentar la densidad de refuerzo social en las primeras tareas para favorecer la implicación (momentum conductual; Nevin, Mandell y Atak, 1983).');
-    } else if (/entrenador|[aá]rbitro|respeto/.test(txt)) {
-      p.push('Respuesta neutra y breve en el momento; la conversación, en privado y en frío.');
-      p.push('Pactar una conducta alternativa concreta (p. ej., levantar la mano, hablar solo a través del capitán) y reforzarla cuando aparezca.');
-    } else if (/agres|violen|f[ií]sic/.test(txt)) {
-      p.push('Retirada inmediata de la tarea para garantizar la seguridad y registro A-B-C completo.');
-      p.push('Coordinación con Nefta y la familia para un plan conductual individual.');
-    } else {
-      p.push('Completar el registro A-B-C (antecedente, conducta exacta, consecuencia) para poder identificar su función.');
-      p.push('Reforzar de forma específica la conducta adecuada opuesta cuando aparezca (DRA).');
-    }
-    if (tipo === 'ConflictoPartido') p.push('En partido: reforzar el autocontrol y la «siguiente jugada» (foco atencional) en la charla de descanso, sin señalar al jugador ante el grupo.');
+    if (/compa/.test(txt)) P = {
+      objetivo: 'Resolver los desacuerdos con compañeros sin contacto ni insultos: parar, respirar y avisar al entrenador o al capitán.',
+      jugador: ['Si un compañero te molesta: para, respira 3 veces y díselo al entrenador o al capitán.',
+                'Anima o ayuda al menos a 2 compañeros en cada sesión.',
+                'Después de un roce, sigue con la siguiente jugada.'],
+      entrenador: ['Registra el A-B-C: qué ocurre justo antes (contacto, pérdida de balón, espera de turno).',
+                   'Antes de las tareas con más fricción, recuerda la norma en positivo y separa a los implicados.',
+                   'Refuerza al instante cada interacción cooperativa (animar, ayudar, pasar).',
+                   'Si se repite: tiempo fuera de 1 minuto sin sermón (solo si no busca evitar la tarea).'],
+      medida: 'Nº de conflictos por sesión y nº de ánimos o ayudas observadas. Objetivo: 0 conflictos durante 2 semanas.',
+      refs: 'Análisis funcional e intervención antecedente (Miltenberger, 2016); reforzamiento diferencial (Cooper, Heron y Heward, 2020).' };
+    else if (/material/.test(txt)) P = {
+      objetivo: 'Recoger y dejar el material en su sitio al terminar cada tarea.',
+      jugador: ['Cuando suene el silbato de fin de tarea, lleva los conos o balones a su sitio.',
+                'Si algo se cae, lo recoges tú antes de seguir.'],
+      entrenador: ['Da la instrucción corta antes de recoger y hazlo tú primero (modelado).',
+                   'Asígnale el rol de «responsable de material» durante 2 semanas.',
+                   'Si lo tira, lo recoge antes de continuar, sin sermón (restitución breve).',
+                   'Elogia en el momento cuando lo hace bien.'],
+      medida: 'Cumple sí/no en cada tarea. Objetivo: 100 % durante 3 sesiones seguidas.',
+      refs: 'Reforzamiento de conducta incompatible y sobrecorrección restitutiva (Cooper, Heron y Heward, 2020).' };
+    else if (/desmotiv|abandono|apat/.test(txt)) P = {
+      objetivo: 'Participar activamente en todas las tareas: completarlas sin pararse ni quedarse al margen.',
+      jugador: ['Elige con el entrenador 1 meta para cada sesión (p. ej., 3 recuperaciones de balón).',
+                'Termina cada tarea aunque te salga mal.'],
+      entrenador: ['Conversación individual de 5 minutos para identificar qué le pasa (posición, minutos, compañeros, casa).',
+                   'Empieza la sesión con tareas en las que tenga éxito y refuerza mucho al principio.',
+                   'Revisa su meta al final de cada sesión y reconoce el esfuerzo.',
+                   'Si persiste 2 semanas, contacta con la familia junto a Nefta.'],
+      medida: '% de tareas completadas por sesión y meta cumplida sí/no.',
+      refs: 'Establecimiento de metas (Locke y Latham, 2002); momentum conductual (Nevin, Mandell y Atak, 1983).' };
+    else if (/[aá]rbitro|entrenador|respeto|rival/.test(txt)) P = {
+      objetivo: 'Aceptar las decisiones sin protestar y hablar solo a través del capitán.',
+      jugador: ['Ante una decisión que no te gusta: respira, di «siguiente jugada» y vuelve a tu posición.',
+                'Si algo te parece injusto, díselo al capitán o al entrenador en el descanso.'],
+      entrenador: ['En el momento: respuesta neutra y breve; la conversación, en privado y en frío.',
+                   'Ensaya en el entrenamiento la respuesta alternativa (respiración + autoinstrucción).',
+                   'Refuerza en público cuando acepte una decisión difícil.'],
+      medida: 'Nº de protestas por partido o sesión. Objetivo: 0 en 3 partidos.',
+      refs: 'Entrenamiento en autoinstrucciones (Meichenbaum, 1977).' };
+    else if (/agres|violen|f[ií]sic/.test(txt)) P = {
+      objetivo: '0 conductas de contacto agresivo; ante el enfado, salir de la jugada y avisar.',
+      jugador: ['Si notas que te enfadas mucho, sal de la jugada y levanta la mano.',
+                'Respira 3 veces antes de volver.'],
+      entrenador: ['Retirada inmediata de la tarea por seguridad y registro A-B-C completo.',
+                   'Aviso a Nefta en el mismo día para un plan individual con la familia.'],
+      medida: 'Frecuencia de conductas agresivas por sesión (objetivo 0).',
+      refs: 'Plan de intervención conductual basado en la función (Cooper, Heron y Heward, 2020).' };
+    else if (/puntual/.test(txt)) P = {
+      objetivo: 'Llegar vestido y preparado 10 minutos antes del inicio.',
+      jugador: ['Prepara la bolsa la noche anterior.', 'Llega al campo 10 minutos antes.'],
+      entrenador: ['Empieza a la hora y refuerza en público a quien llega a tiempo.', 'Habla con la familia si se repite.'],
+      medida: 'Llega a tiempo sí/no por sesión. Objetivo: 100 % en 2 semanas.',
+      refs: 'Reforzamiento positivo (Cooper, Heron y Heward, 2020).' };
+    else P = {
+      objetivo: 'Mantener la conducta adecuada durante las tareas (definir con el entrenador la conducta concreta).',
+      jugador: ['Sigue las normas del grupo y escucha las instrucciones.'],
+      entrenador: ['Completa el registro A-B-C para identificar la función.', 'Refuerza de forma específica la conducta adecuada cuando aparezca.'],
+      medida: 'Frecuencia de la conducta por sesión durante 2 semanas.',
+      refs: 'Análisis funcional (Miltenberger, 2016).' };
+    if (tipo === 'ConflictoPartido') P.entrenador.push('En el descanso: refuerza el autocontrol y el foco en la «siguiente jugada», sin señalarle ante el grupo.');
   } else if (tipo === 'Tarjetas') {
-    if (/protesta|lenguaje/.test(txt)) {
-      p.push('Practicar en entrenamiento la respuesta alternativa a la decisión arbitral: respiración 4-4-4 + autoinstrucción («siguiente jugada») (entrenamiento en autoinstrucciones; Meichenbaum, 1977).');
-      p.push('Recordar el protocolo: con el árbitro solo hablan entrenador y capitanes. Reforzar en público cuando lo cumpla.');
-    } else if (/roja|violento/.test(txt)) {
-      p.push('Charla grupal breve sobre control emocional sin señalar al jugador; seguimiento individual con Nefta.');
-    } else {
-      p.push('Revisar con el jugador, en calma, qué alternativa tenía en esa jugada y ensayarla en el siguiente entrenamiento.');
-    }
-  } else if (tipo === 'ConductaFamilias') {
-    p.push('Recordar a las familias las normas de grada (ánimo positivo, sin instrucciones al jugador) por el canal habitual del equipo, sin personalizar.');
-    p.push('Si se repite, reunión breve con la familia implicada junto a Nefta o la dirección.');
-  }
+    if (/protesta|lenguaje/.test(txt)) P = {
+      objetivo: 'Aceptar las decisiones arbitrales sin protestar.',
+      jugador: ['Ante una decisión del árbitro: respira 4-4-4, di «siguiente jugada» y vuelve a tu posición.', 'Con el árbitro solo hablan el entrenador y el capitán.'],
+      entrenador: ['Ensaya la respuesta alternativa en el entrenamiento con decisiones «injustas» simuladas.', 'Refuerza en público cuando cumpla el protocolo.'],
+      medida: 'Protestas y tarjetas por partido. Objetivo: 0 en 3 partidos.',
+      refs: 'Entrenamiento en autoinstrucciones (Meichenbaum, 1977).' };
+    else P = {
+      objetivo: 'Terminar el partido sin tarjetas por conducta.',
+      jugador: ['Si te enfadas, aléjate de la jugada y respira.'],
+      entrenador: ['Revisa con él, en calma, qué alternativa tenía y ensáyala en el siguiente entrenamiento.', 'Si es roja, seguimiento individual con Nefta.'],
+      medida: 'Tarjetas por partido.',
+      refs: 'Entrenamiento en habilidades conductuales (Miltenberger, 2016).' };
+  } else if (tipo === 'ConductaFamilias') P = {
+    objetivo: 'Familias en la grada solo con ánimo positivo y sin instrucciones al jugador.',
+    jugador: ['Escucha solo al entrenador durante el partido.'],
+    entrenador: ['Recuerda las normas de grada por el canal del equipo, sin personalizar.', 'Si se repite, reunión breve con la familia junto a Nefta o la dirección.'],
+    medida: 'Incidencias de familias por partido.',
+    refs: 'Intervención antecedente (Miltenberger, 2016).' };
+  else P = { objetivo: '—', jugador: [], entrenador: ['Completar el registro A-B-C.'], medida: '—', refs: '' };
 
-  if (grav >= 3) p.unshift('⚠️ Gravedad alta: Nefta contactará con el jugador y la familia esta semana. Hasta entonces, aplicar solo medidas de seguridad y registro.');
-  if (recurrente) p.push('Patrón recurrente: registrar la frecuencia por sesión durante 2 semanas para valorar si la intervención funciona (línea base y seguimiento).');
-  if (pendiente) p.push('Seguimiento pendiente: revisar en la próxima sesión y actualizar el estado en la app.');
-  return p;
+  if (grav >= 3) P.entrenador.unshift('⚠️ Gravedad alta: Nefta contactará con el jugador y la familia esta semana. Hasta entonces, solo medidas de seguridad y registro.');
+  if (recurrente) P.medida += ' Patrón recurrente: registrar la frecuencia por sesión durante 2 semanas (línea base y seguimiento).';
+  if (pendiente) P.entrenador.push('Seguimiento pendiente: revisarlo en la próxima sesión y actualizar el estado en la app.');
+  return P;
+}
+
+// Compatibilidad: lista plana
+function pautasIncidencia(tipo, r) {
+  const P = pautaOperativa(tipo, r);
+  return ['Objetivo: ' + P.objetivo].concat(P.entrenador);
+}
+
+function htmlPautaOperativa(P, compacto) {
+  const li = a => a.map(x => `<div style="margin:2px 0 2px 8px">• ${escI(x)}</div>`).join('');
+  return `<div style="font-size:12px;line-height:1.5;color:#1F2937">
+    <div style="background:#EEF2FF;border-left:3px solid #4F46E5;padding:5px 9px;border-radius:4px;margin-bottom:5px"><b style="color:#3730A3">🎯 Conducta objetivo:</b> ${escI(P.objetivo)}</div>
+    ${P.jugador.length?`<div style="background:#ECFEFF;border-left:3px solid #0891B2;padding:5px 9px;border-radius:4px;margin-bottom:5px"><b style="color:#155E75">⚽ Para el jugador:</b>${li(compacto?P.jugador.slice(0,2):P.jugador)}</div>`:''}
+    <div style="background:#ECFDF5;border-left:3px solid #059669;padding:5px 9px;border-radius:4px;margin-bottom:5px"><b style="color:#065F46">🧑‍🏫 Para el entrenador:</b>${li(compacto?P.entrenador.slice(0,3):P.entrenador)}</div>
+    <div style="background:#FFFBEB;border-left:3px solid #D97706;padding:5px 9px;border-radius:4px;margin-bottom:3px"><b style="color:#92400E">📏 Cómo se mide:</b> ${escI(P.medida)}</div>
+    ${!compacto && P.refs?`<div style="font-size:10px;color:#6B7280">Base técnica: ${escI(P.refs)}</div>`:''}
+  </div>`;
+}
+
+function textoPautaOperativa(P) {
+  return '🎯 Conducta objetivo: ' + P.objetivo +
+    (P.jugador.length ? '\n\n⚽ Para el jugador:\n' + P.jugador.map(x => '• ' + x).join('\n') : '') +
+    '\n\n🧑‍🏫 Para el entrenador:\n' + P.entrenador.map(x => '• ' + x).join('\n') +
+    '\n\n📏 Cómo se mide: ' + P.medida;
 }
 
 function pintarIncidencias(data) {
@@ -2141,8 +2219,8 @@ function pintarIncidencias(data) {
       const grav = r['Gravedad'] ? `<span style="background:#FEE2E2;color:#991B1B;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700">G${escI(r['Gravedad'])}</span>` : '';
       const est  = r['Seguimiento'] || r['Resolucion'] || '';
       const fila = (lbl, v, bg, bc) => v ? `<div style="background:${bg};border-left:3px solid ${bc};padding:6px 10px;border-radius:4px;margin-bottom:4px;font-size:12px"><b>${lbl}:</b> ${escI(v)}</div>` : '';
-      const pautas = pautasIncidencia(t, r);
-      const textoCopia = `RCD Santa Ponça · ${titulo[t]} · ${jug} · ${r['Fecha']||''}\nPautas:\n` + pautas.map(x => '• ' + x).join('\n');
+      const PO = pautaOperativa(t, r);
+      const textoCopia = `RCD Santa Ponça · ${titulo[t]} · ${jug} · ${r['Fecha']||''}\n\n` + textoPautaOperativa(PO);
       return `<details style="border:1px solid #E5E7EB;border-left:4px solid ${color[t]};border-radius:8px;margin-bottom:8px;background:#fff" ${i<3?'open':''}>
         <summary style="cursor:pointer;padding:9px 12px;list-style:none">
           <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -2165,7 +2243,7 @@ function pintarIncidencias(data) {
           ${fila('Herramientas', r['Herramientas'], '#F0FDF4', '#065F46')}
           <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:6px;padding:9px 11px;margin-top:6px">
             <div style="font-size:11px;font-weight:800;color:#065F46;margin-bottom:4px">🧭 Pautas para el entrenador</div>
-            ${pautas.map(x => `<div style="font-size:12px;color:#064E3B;line-height:1.55;margin-bottom:3px">• ${escI(x)}</div>`).join('')}
+            ${htmlPautaOperativa(PO, false)}
             <button data-copia="${escI(textoCopia)}" onclick="navigator.clipboard.writeText(this.dataset.copia).then(()=>toast('✅ Pautas copiadas'))" style="margin-top:6px;background:#065F46;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer">📋 Copiar pautas para enviar</button>
           </div>
         </div>
@@ -2175,7 +2253,7 @@ function pintarIncidencias(data) {
 }
 
 // ── Stats partido — acceso con contraseña ────────────────────────────────────
-const STATS_PW = 'nefta2627';
+const STATS_PW_H = '828a1fe8e04750edbdc707b38c49fbe2c6a712c696ce40ed69ca7b8cc13eda2b';
 
 function abrirStats(btn) {
   setTabVisible('stats-partido');
@@ -2183,10 +2261,10 @@ function abrirStats(btn) {
   if (btn) btn.classList.add('active');
 }
 
-function verificarStats() {
+async function verificarStats() {
   const pw = document.getElementById('stats-pw').value;
   const err = document.getElementById('stats-pw-err');
-  if (pw === STATS_PW) {
+  if ((await sha256(pw)) === STATS_PW_H) {
     document.getElementById('stats-login').style.display = 'none';
     document.getElementById('stats-content').style.display = 'block';
     document.getElementById('stats-pw').value = '';
@@ -2250,12 +2328,13 @@ function detallesJugador(jug) {
     .slice().sort((a,b) => String(b.r.Fecha||'').localeCompare(String(a.r.Fecha||'')))
     .map(det => {
       const r = registroCompleto(det);
-      const pautas = pautasIncidencia(det.ficha, r).filter(x => !/^Seguimiento pendiente/.test(x));
+      const PO = pautaOperativa(det.ficha, r);
+      const pautas = [PO.objetivo];
       return {
         ficha: det.ficha, titulo: TITULO_FICHA[det.ficha] || det.ficha,
         fecha: fechaCorta(r.Fecha), tipo: String(r.Tipo || r.Motivo || '—'),
         grav: r.Gravedad ? String(r.Gravedad) : '', estado: String(r.Seguimiento || r.Resolucion || ''),
-        minuto: r.Minuto ? String(r.Minuto) : '', pautas: pautas
+        minuto: r.Minuto ? String(r.Minuto) : '', pautas: pautas, po: PO
       };
     });
 }
@@ -2265,7 +2344,7 @@ function htmlDetalles(dets, nPautas) {
   return dets.map(d => `<div style="border:1px solid #FECACA;border-radius:6px;padding:7px 9px;margin-top:6px;background:#FFFBFB">
       <div style="font-size:11px;font-weight:800;color:#991B1B">⚡ ${d.titulo} · ${escI(d.tipo)}</div>
       <div style="font-size:10px;color:#6B7280">${d.fecha}${d.minuto?' · min '+escI(d.minuto):''}${d.grav?' · G'+escI(d.grav):''}${d.estado?' · '+escI(d.estado):''}</div>
-      <div style="font-size:11px;color:#065F46;margin-top:4px;line-height:1.5"><b>🧭 Pauta:</b> ${d.pautas.slice(0, nPautas||2).map(escI).join(' ')}</div>
+      <div style="margin-top:5px">${htmlPautaOperativa(d.po, true)}</div>
     </div>`).join('');
 }
 
@@ -2281,7 +2360,7 @@ function actualizarRecomendacion() {
   }
   box.innerHTML = '<div style="font-weight:800;margin-bottom:6px">Pautas para el entrenador según las incidencias registradas:</div>' +
     items.map(({ j, d }) => `<div style="margin-bottom:8px;font-size:12px"><b>${escI(j)}</b> · ${d.titulo}: <b>${escI(d.tipo)}</b> (${d.fecha}${d.grav?', G'+escI(d.grav):''})<br>
-      <span style="color:#064E3B">🧭 ${d.pautas.slice(0,2).map(escI).join(' ')}</span></div>`).join('');
+      <div style="margin-top:4px">${htmlPautaOperativa(d.po, true)}</div></div>`).join('');
 }
 
 function actualizarStatsAuto() {
@@ -2292,9 +2371,9 @@ function actualizarStatsAuto() {
 }
 
 // ── Datos precargados desde Excel (24/09/2026) ────────────────────────────────
-const DATOS_EXCEL = {"BenjaminC": {"asistencia": {"Javi V.": [{"pres": 1, "fj": 0, "fnj": 0}], "Erik T.": [{"pres": 1, "fj": 0, "fnj": 0}], "Andreas C. M.": [{"pres": 1, "fj": 0, "fnj": 0}], "Cristian D.": [{"pres": 1, "fj": 0, "fnj": 0}], "Maddox M.": [{"pres": 1, "fj": 0, "fnj": 0}], "Mattias M.": [{"pres": 1, "fj": 0, "fnj": 0}], "Adam C.": [{"pres": 1, "fj": 0, "fnj": 0}], "Salah A. J. W.": [{"pres": 0, "fj": 1, "fnj": 0}], "Lorenzo W.": [{"pres": 1, "fj": 0, "fnj": 0}], "José Luis V. C.": [{"pres": 1, "fj": 0, "fnj": 0}], "Adrián M.": [{"pres": 1, "fj": 0, "fnj": 0}], "Oliver D. A.": [{"pres": 1, "fj": 0, "fnj": 0}], "Antonio S.": [{"pres": 1, "fj": 0, "fnj": 0}]}, "valoracion": {"Javi V.": [{"ate": 5.0, "int_": 4.0, "act": 5.0}], "Erik T.": [{"ate": 5.0, "int_": 3.0, "act": 4.0}], "Andreas C. M.": [{"ate": 2.0, "int_": 2.0, "act": 3.0}], "Cristian D.": [{"ate": 5.0, "int_": 4.0, "act": 5.0}], "Maddox M.": [{"ate": 4.0, "int_": 4.0, "act": 4.0}], "Mattias M.": [{"ate": 4.0, "int_": 3.0, "act": 4.0}], "Adam C.": [{"ate": 5.0, "int_": 5.0, "act": 4.0}], "Lorenzo W.": [{"ate": 4.0, "int_": 3.0, "act": 4.0}], "José Luis V. C.": [{"ate": 5.0, "int_": 4.0, "act": 4.0}], "Adrián M.": [{"ate": 3.0, "int_": 3.0, "act": 3.0}], "Oliver D. A.": [{"ate": 1.0, "int_": 1.0, "act": 1.0}], "Antonio S.": [{"ate": 2.0, "int_": 2.0, "act": 2.0}]}, "conflictos": {"Maddox": 1, "Javier P.": 1}}, "PreBenjaminB": {"asistencia": {"Mateo": [{"pres": 1, "fj": 0, "fnj": 0}], "Mario": [{"pres": 1, "fj": 0, "fnj": 0}], "Elias": [{"pres": 1, "fj": 0, "fnj": 0}], "Joan Manuel": [{"pres": 1, "fj": 0, "fnj": 0}], "Lucas": [{"pres": 1, "fj": 0, "fnj": 0}], "Cheik": [{"pres": 1, "fj": 0, "fnj": 0}], "Juan": [{"pres": 1, "fj": 0, "fnj": 0}], "Ruben": [{"pres": 1, "fj": 0, "fnj": 0}], "Martin": [{"pres": 1, "fj": 0, "fnj": 0}], "Thomas": [{"pres": 1, "fj": 0, "fnj": 0}], "Enzo D.": [{"pres": 1, "fj": 0, "fnj": 0}], "Enzo C.": [{"pres": 1, "fj": 0, "fnj": 0}], "Ian": [{"pres": 1, "fj": 0, "fnj": 0}]}, "valoracion": {"Mateo": [{"ate": 4.0, "int_": 4.0, "act": 4.0}], "Mario": [{"ate": 2.0, "int_": 3.0, "act": 4.0}], "Elias": [{"ate": 3.0, "int_": 2.0, "act": 2.0}], "Joan Manuel": [{"ate": 3.0, "int_": 4.0, "act": 4.0}], "Lucas": [{"ate": 3.0, "int_": 3.0, "act": 3.0}], "Cheik": [{"ate": 3.0, "int_": 3.0, "act": 3.0}], "Juan": [{"ate": 5.0, "int_": 5.0, "act": 5.0}], "Ruben": [{"ate": 4.0, "int_": 5.0, "act": 5.0}], "Martin": [{"ate": 4.0, "int_": 4.0, "act": 4.0}], "Thomas": [{"ate": 3.0, "int_": 2.0, "act": 2.0}], "Enzo D.": [{"ate": 4.0, "int_": 4.0, "act": 3.0}], "Enzo C.": [{"ate": 3.0, "int_": 3.0, "act": 3.0}], "Ian": [{"ate": 3.0, "int_": 4.0, "act": 4.0}]}, "conflictos": {}}, "BenjaminA": {"asistencia": {"Leo": [{"pres": 1, "fj": 0, "fnj": 0}], "Tiziano": [{"pres": 1, "fj": 0, "fnj": 0}], "Hugo": [{"pres": 1, "fj": 0, "fnj": 0}], "Joel": [{"pres": 1, "fj": 0, "fnj": 0}], "Gonzalo": [{"pres": 1, "fj": 0, "fnj": 0}], "Xisco": [{"pres": 1, "fj": 0, "fnj": 0}], "Nico": [{"pres": 1, "fj": 0, "fnj": 0}], "Marcos": [{"pres": 1, "fj": 0, "fnj": 0}], "Cristiano": [{"pres": 1, "fj": 0, "fnj": 0}], "Aaron": [{"pres": 1, "fj": 0, "fnj": 0}], "Sergio": [{"pres": 1, "fj": 0, "fnj": 0}], "Noel": [{"pres": 1, "fj": 0, "fnj": 0}]}, "valoracion": {}, "conflictos": {"Guyu": 1}}};
+const DATOS_EXCEL = {};   // ya no se usa: todos los datos se leen de Google Sheets
 
-const REGISTROS_ESPECIALES = [{"fecha": "2026-09-24", "categoria": "Amateur A", "entrenador": "Riki Alemany", "jugador": "Amateur A - J.P.", "tipo_conflicto": "Conflicto físico con compañero", "antecedente": "Viene de temporadas en otros clubes donde ha tenido varias expulsiones, ya me avisaron de que era un jugador complicado pero acepté tenerlo.", "conducta": "Ha jugado 5 partidos de pretemporada y en tres de ellos ha agredido al rival, teniendo que quitar al jugador del partido para continuar con el partido.", "consecuencia": "Su actitud no es de arrepentimiento, se justifica.\n\nNo tiene una actitud de humildad, se siente superior.", "gravedad": "3.0", "patron": "Recurrente", "accion": "No le he hecho ficha, la he informado que de momento tiene que entrenar y mostrar un cambio de actitud.\n\nNo estoy seguro de querer hacerle la ficha.", "seguimiento": "Conversación individual pendiente, En proceso", "equipoId": "amateur"}];
+const REGISTROS_ESPECIALES = [{"fecha": "2026-09-24", "categoria": "Amateur A", "entrenador": "Riki Alemany", "jugador": "Amateur A - J.P.", "tipo_conflicto": "Conflicto físico con compañero", "antecedente": "", "conducta": "Detalle completo (A-B-C y acción) solo en Google Sheets, pestaña «entrenos».", "consecuencia": "", "gravedad": "3.0", "patron": "Recurrente", "accion": "", "seguimiento": "Conversación individual pendiente, En proceso", "equipoId": "amateur"}];
 
 function cargarDatosExcel(equipoId) {
   const d = USAR_DATOS_EXCEL ? DATOS_EXCEL[equipoId] : null;
@@ -2306,7 +2385,7 @@ function cargarDatosExcel(equipoId) {
   // Poblar casos graves (solo Nefta) y cargar datos desde db
   if (isNefta) poblarCasosGraves();
   // Cargar registros persistentes de db sobre los del Excel
-  cargarDesdeSheets(equipoId).then(() => { calcularStatsEntreno(); calcularStatsPartido(); });
+  cargarDesdeSheets(equipoId).then(() => { actualizarStatsAuto(); });
   if (isNefta) cargarIncidencias(); else document.querySelectorAll('.incid-box').forEach(b => { b.style.display='none'; b.innerHTML=''; });
   // Mostrar casos graves filtrados por equipo en Stats
   if (isNefta) mostrarCasosGravesEnStats(equipoId);
@@ -3207,7 +3286,7 @@ ${nV>0?`<div class="sec">RESUMEN VALORACIÓN</div>
 <div style="font-size:9px;color:#6B7280;text-align:center;margin-bottom:8px">🟢 ≥4.0 · 🟡 2.5–4.0 · 🔴 &lt;2.5</div>
 ${(()=>{ const it=[]; J.forEach(j=>detallesJugador(j).forEach(d=>it.push({j,d}))); if(!it.length) return '';
   return `<div class="sec">INCIDENCIAS Y PAUTAS PARA EL ENTRENADOR</div><table><thead><tr><th style="text-align:left">Jugador</th><th style="text-align:left">Incidencia</th><th style="text-align:left">Pauta</th></tr></thead><tbody>`+
-  it.map(({j,d},i)=>`<tr><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};vertical-align:top"><b>${escI(j)}</b></td><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};vertical-align:top">${d.titulo}: <b>${escI(d.tipo)}</b><br><span style="color:#6B7280">${d.fecha}${d.minuto?' · min '+escI(d.minuto):''}${d.grav?' · G'+escI(d.grav):''}${d.estado?' · '+escI(d.estado):''}</span></td><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};color:#064E3B;vertical-align:top">${d.pautas.slice(0,2).map(escI).join(' ')}</td></tr>`).join('')+`</tbody></table>`; })()}
+  it.map(({j,d},i)=>`<tr><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};vertical-align:top"><b>${escI(j)}</b></td><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};vertical-align:top">${d.titulo}: <b>${escI(d.tipo)}</b><br><span style="color:#6B7280">${d.fecha}${d.minuto?' · min '+escI(d.minuto):''}${d.grav?' · G'+escI(d.grav):''}${d.estado?' · '+escI(d.estado):''}</span></td><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};color:#064E3B;vertical-align:top"><b>🎯</b> ${escI(d.po.objetivo)}<br><b>⚽ Jugador:</b> ${d.po.jugador.slice(0,2).map(escI).join(' ')}<br><b>🧑‍🏫 Entrenador:</b> ${d.po.entrenador.slice(0,2).map(escI).join(' ')}<br><b>📏</b> ${escI(d.po.medida)}</td></tr>`).join('')+`</tbody></table>`; })()}
 <div class="msg">💚 Los datos recogidos serán revisados por el psicólogo del club. Las incidencias se comentarán la siguiente semana.<br><br><b style="font-size:13px">¡¡ VAMOS VERDES !!</b></div>
 <div class="pie"><span>RCD Santa Ponça · Psicología Deportiva · B-03305</span><span>Neftalí Martínez Arredondo</span><span>Temporada 2026/2027</span></div>
 <div class="lopd">${lopd}</div>
@@ -3307,7 +3386,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── Estadísticas — contraseña ────────────────────────────────────────────────
-const EST_PW = '01Mia02';
+const EST_PW_H = 'ef3665b5c0eed794fdc7dc0da67e5f704fa50f89b6930b5380dd656581841f49';
 let chartsCreated = false;
 let chartInstances = {};
 
@@ -3317,9 +3396,9 @@ function abrirEstadisticas(btn) {
   if (btn) btn.classList.add('active');
 }
 
-function verificarEst() {
+async function verificarEst() {
   const pw = document.getElementById('est-pw').value;
-  if (pw === EST_PW) {
+  if ((await sha256(pw)) === EST_PW_H) {
     document.getElementById('est-login').style.display = 'none';
     document.getElementById('est-content').style.display = 'block';
     document.getElementById('est-pw').value = '';
