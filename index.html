@@ -1985,10 +1985,26 @@ function pintarArbitros(evs) {
       <summary style="cursor:pointer;list-style:none">
         <div style="font-weight:800;font-size:13px">${al.length?'🚨 ':''}${esc(d['d-local']||'Local')} vs ${esc(d['d-visit']||'Visitante')} <span style="font-weight:400;color:#6B7280">· ${esc(d['d-result']||'')}</span></div>
         <div style="font-size:11px;color:#6B7280">${esc(d['d-fecha']||ev.fecha||'—')} · ${esc(d['d-cat']||'—')} · ${esc(d['d-campo']||'—')} · recibido ${esc(ev.recibido||'')}</div>
-        <div style="margin-top:4px">${chip('Amb.',r.ambiente)}${chip('Ent.',r.entrenadores)}${chip('Jug.',r.jugadores)}${chip('Cap.',r.capitanes)}${chip('Resp.',r.respeto)}${chip('Global',r.global)}</div>
+        <div style="margin-top:4px">${chip('Amb.',r.ambiente)}${chip('Ent.',r.entrenadores)}${chip('Jug.',r.jugadores)}${chip('Cap.',r.capitanes)}${chip('Resp.',r.respeto)}${chip('Global',r.global)}${r.instalaciones!=null?chip('Inst.',r.instalaciones):''}${r.organizacion!=null?chip('Org.',r.organizacion):''}${r.fairplay!=null?chip('Fair play',r.fairplay):''}</div>
+        ${(ev.cruce||[]).length?`<div style="font-size:10px;font-weight:700;color:#1d4ed8;margin-top:3px">🔗 Cruzado con ${ev.cruce.map(c=>esc(c.equipo)).join(', ')}</div>`:''}
       </summary>
       <div style="margin-top:8px;border-top:1px solid var(--borde);padding-top:8px">
         ${al.length?`<div style="background:#FEF2F2;border-radius:6px;padding:8px 10px;margin-bottom:6px">${al.map(a=>`<div style="font-size:12px;color:#7F1D1D">${esc(a)}</div>`).join('')}</div>`:''}
+        <div style="background:#F3F4F6;border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12px">
+          <b>📋 Datos del árbitro:</b> 🟨 ${esc(r.amarillas||d['tarj-am']||'—')} · 🟥 ${esc(r.rojas||d['tarj-ro']||'—')} · Riesgo: ${esc(r.riesgo||d['riesgo']||'—')} · ¿Volvería?: ${esc(r.volveria||d['volveria']||'—')}
+        </div>
+        ${(ev.cruce||[]).length ? ev.cruce.map(c=>{
+          const amA=String(r.amarillas||d['tarj-am']||''), roA=String(r.rojas||d['tarj-ro']||'');
+          const difAm = amA && !(amA===String(c.amarillas) || (amA==='2–3'&&c.amarillas>=2&&c.amarillas<=3) || (amA==='4+'&&c.amarillas>=4));
+          const difRo = roA && !(roA===String(c.rojas) || (roA==='2+'&&c.rojas>=2));
+          return `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12px">
+            <div style="font-weight:800;color:#1d4ed8;margin-bottom:3px">🔗 Cruce con registros del club · ${esc(c.equipo)} vs ${esc(c.rival||'—')}</div>
+            <div style="font-size:10px;color:#6B7280;margin-bottom:4px">Coincide por ${esc(c.coincide)}</div>
+            <div>Resultado (club): <b>${esc(c.resultado||'—')}</b> · Convocados: ${c.convocados}</div>
+            <div>Tarjetas registradas por el club: 🟨 ${c.amarillas} · 🟥 ${c.rojas} ${difAm||difRo?'<span style="color:#991B1B;font-weight:700">· ⚠️ no coincide con el árbitro</span>':''}</div>
+            <div>Conflictos en partido: ${c.conflictos} · Quejas: ${c.quejas} · Incidencias de familias: ${c.familias}</div>
+            ${c.valoracionEntrenador||c.actitud?`<div>Valoración del entrenador: ${esc(c.valoracionEntrenador||'—')} · Actitud: ${esc(c.actitud||'—')}</div>`:''}
+          </div>`;}).join('') : `<div style="font-size:11px;color:#9CA3AF;margin-bottom:6px">🔗 Sin registros del club para esta fecha y rival/categoría.</div>`}
         ${linea('Árbitro', d['d-arbitro'])}
         ${linea('Gradas', d['gradas'])}${linea('Insultos al árbitro', d['amb-ins-arb'])}${linea('Incidencias ambiente', d['amb-incid-txt'])}
         ${linea('Cuestionamiento entrenadores', d['ent-cuest'])}${linea('Sanción entrenador', d['ent-sancion'])}${linea('Obs. entrenadores', d['ent-obs'])}
@@ -2306,7 +2322,7 @@ async function cargarVisitas() {
       <div style="padding:6px 14px 9px;font-size:10px;color:#9CA3AF">Visitas = entradas (una por sesión). Personas = dispositivos distintos. No se cuentan tus propias visitas.</div>
     </div>`;
   } catch(e) {
-    box.innerHTML = '<div style="font-size:12px;color:#9CA3AF">👁️ No se pudieron cargar las visitas.</div>';
+    box.innerHTML = '<div style="font-size:12px;color:#9CA3AF">👁️ No se pudieron cargar las visitas (' + String(e && e.message || e).slice(0,80) + '). <u style="cursor:pointer" onclick="cargarVisitas()">Reintentar</u></div>';
   }
 }
 enviarVisita('app', false);

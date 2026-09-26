@@ -139,7 +139,6 @@ try{if(sessionStorage.getItem('ffib_ok')==='1')gateOpen();}catch(e){}
     <div class="tab" onclick="show('jugadores')">Jugadores</div>
     <div class="tab" onclick="show('capitanes')">Capitanes</div>
     <div class="tab" onclick="show('respeto')">Respeto</div>
-    <div class="tab" onclick="show('resultado')">📊 Resultado</div>
   </div>
 </div>
 
@@ -558,13 +557,13 @@ try{if(sessionStorage.getItem('ffib_ok')==='1')gateOpen();}catch(e){}
   <div style="background:#F0FDF4;border-left:3px solid #065F46;border-radius:6px;padding:10px 13px;font-size:11px;color:#065F46;line-height:1.7;margin-bottom:8px">
     🔒 Tus respuestas son estrictamente confidenciales y están protegidas por el secreto profesional. Solo el psicólogo del programa tendrá acceso a los datos individuales.
   </div>
-  <button class="btn" id="btn-enviar" onclick="generarResult()">📤 Enviar y ver resultado</button>
+  <button class="btn" id="btn-enviar" onclick="generarResult()">📤 Enviar respuestas</button>
 </div>
 
 <!-- ══ RESULTADO ══════════════════════════════════════════════════════════ -->
 <div class="pantalla" id="tab-resultado">
   <div id="result-contenido" style="margin-top:14px">
-    <div class="info">Completa todas las secciones para ver tu resultado personalizado.</div>
+    <div class="info">Completa todas las secciones y pulsa «Enviar respuestas».</div>
   </div>
 </div>
 
@@ -609,7 +608,7 @@ async function enviarArbitro(resumen) {
   const est = document.getElementById('envio-estado');
   if (DEMO) {
     if (est) { est.style.background='#FEF3C7'; est.style.color='#92400E';
-      est.textContent='🧪 Versión de revisión: este resultado es de ejemplo y las respuestas no se han guardado.'; }
+      est.textContent='🧪 Versión de revisión: las respuestas no se han guardado.'; }
     return;
   }
   const btn = document.getElementById('btn-enviar');
@@ -783,11 +782,21 @@ function generarResult() {
       </div>
     </div>`;
 
+  // El resultado solo lo ve Nefta en su app: al árbitro solo se le muestra el agradecimiento
   document.getElementById('result-contenido').innerHTML =
-    '<div id="envio-estado" style="border-radius:8px;padding:10px 13px;font-size:12px;font-weight:700;margin-bottom:10px"></div>' + html;
+    '<div id="envio-estado" style="border-radius:8px;padding:10px 13px;font-size:12px;font-weight:700;margin-bottom:10px"></div>' +
+    '<div class="card" style="text-align:center;padding:26px 18px">' +
+      '<div style="font-size:42px;margin-bottom:8px">🙏</div>' +
+      '<div style="font-size:17px;font-weight:800;color:var(--azul);margin-bottom:8px">Gracias por tu colaboración</div>' +
+      '<div style="font-size:13px;color:#4B5563;line-height:1.6">Tus respuestas son confidenciales. Nos ayudan a detectar situaciones de riesgo y a mejorar, junto al club y las familias, el respeto hacia el árbitro y los equipos.</div>' +
+    '</div>';
   show('resultado');
   enviarArbitro({ ambiente: mAmb, entrenadores: mEnt, jugadores: mJug, capitanes: mCap,
-                  respeto: mResp, global: mGlob, alertas: alertas, positivos: pos });
+                  respeto: mResp, global: mGlob, alertas: alertas, positivos: pos,
+                  instalaciones: _d['inst'] ?? null, organizacion: _d['org'] ?? null,
+                  fairplay: _d['fairplay'] ?? null, comunicacion: _d['cap-com'] ?? null,
+                  amarillas: _d['tarj-am'] || '', rojas: _d['tarj-ro'] || '',
+                  riesgo: _d['riesgo'] || '', volveria: _d['volveria'] || '' });
 }
 </script>
 </body>
