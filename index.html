@@ -455,6 +455,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
             <label class="rp"><input type="radio" name="ss-ses" value="3"> 3</label>
           </div>
         </div>
+        <div class="solo-nefta">
         <div class="sep">Resumen por jugador</div>
         <div style="overflow-x:auto"><table class="jt">
           <thead><tr><th style="text-align:left;padding-left:7px">Jugador</th><th>Asist.</th><th>Fal.J</th><th>Fal.NJ</th><th>Ate.</th><th>Int.</th><th>Act.</th><th>Media</th></tr></thead>
@@ -476,6 +477,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
         </div>
 
+        </div><!-- /solo-nefta -->
         <div id="eval-auto-result" style="display:none;background:#DBEAFE;border-left:3px solid #2563EB;padding:12px 14px;border-radius:6px;margin-bottom:10px;font-size:12px;color:#1C2B4A;line-height:1.8"></div>
         <div class="field">
           <label>Recomendación al entrenador</label>
@@ -1103,6 +1105,7 @@ function abrirEquipoConfirmado(key) {
   if(elCG) elCG.style.display = isNefta ? 'inline-flex' : 'none';
   const elArb = document.getElementById('tab-p-arb');
   if(elArb) elArb.style.display = isNefta ? 'inline-flex' : 'none';
+  document.querySelectorAll('.solo-nefta').forEach(el => el.style.display = isNefta ? '' : 'none');
 
   // Limpiar datos de semana anterior y cargar los del Excel
   _registrosSemana.asistencia = {};
@@ -2573,7 +2576,8 @@ function calcularStatsEntreno() {
     set('act', actM,  actM !=='—'?'#065F46':'#9CA3AF');
     set('med', media, mColor);
   });
-  if (!hayDatos) {
+  if (!isNefta) { /* los entrenadores no ven stats */ }
+  else if (!hayDatos) {
     toast('⚠️ Guarda primero asistencia y valoración para ver las stats');
   } else {
     toast('✅ Stats actualizados');
