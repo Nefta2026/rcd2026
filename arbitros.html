@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FFIB · Experiencia del Árbitro</title>
+<style>
+:root {
+  --verde:#1a5c2e;--verde-c:#D1FAE5;
+  --azul:#1C2B4A;--azul-c:#DBEAFE;
+  --ambar:#B45309;--ambar-c:#FEF3C7;
+  --rojo:#991B1B;--rojo-c:#FEE2E2;
+  --gris:#F9FAFB;--borde:#E5E7EB;
+  --texto:#111827;--texto2:#374151;--texto3:#6B7280;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#f3f4f6;min-height:100vh}
+.header{background:var(--azul);color:#fff}
+.ht{display:flex;align-items:center;gap:14px;padding:16px 20px}
+.logo{font-size:28px}
+.htitle{font-size:16px;font-weight:800}
+.hsub{font-size:11px;opacity:.65;margin-top:2px}
+.tabs{display:flex;border-top:1px solid rgba(255,255,255,.1);overflow-x:auto}
+.tab{padding:10px 14px;font-size:11px;font-weight:700;color:rgba(255,255,255,.5);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:.2s}
+.tab.active{color:#fff;border-bottom-color:#4ADE80}
+.pantalla{display:none;max-width:680px;margin:0 auto;padding:16px}
+.pantalla.v{display:block}
+.card{background:#fff;border:1px solid var(--borde);border-radius:10px;padding:16px;margin-bottom:12px}
+.sec{border-radius:5px;padding:7px 13px;font-size:11px;font-weight:700;color:#fff;margin:14px 0 9px}
+.sa{background:var(--azul)}.sv{background:var(--verde)}.sam{background:var(--ambar)}.sr{background:var(--rojo)}
+.q{font-size:12px;font-weight:700;color:var(--texto2);margin-bottom:7px;line-height:1.5;margin-top:14px}
+.q:first-child{margin-top:0}
+.qs{font-size:10px;color:var(--texto3);margin-bottom:6px}
+.stars{display:flex;gap:5px;margin-bottom:3px}
+.star{font-size:26px;cursor:pointer;color:#D1D5DB;transition:.1s}
+.star.on{color:#F59E0B}
+.llab{display:flex;justify-content:space-between;font-size:9px;color:var(--texto3);margin-top:2px}
+.pills{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.pill{padding:6px 11px;border:2px solid var(--borde);border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;color:var(--texto3);transition:.15s}
+.pill:hover{border-color:var(--azul);color:var(--azul)}
+.pill.sel{background:var(--azul);border-color:var(--azul);color:#fff}
+.pv.sel{background:var(--verde);border-color:var(--verde);color:#fff}
+.pa.sel{background:var(--ambar);border-color:var(--ambar);color:#fff}
+.pr.sel{background:var(--rojo);border-color:var(--rojo);color:#fff}
+.likert{display:flex;gap:5px;margin-top:5px}
+.lb{flex:1;border:2px solid var(--borde);border-radius:7px;padding:7px 3px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;color:var(--texto3);background:#fff;transition:.15s}
+.lb.s1,.lb.s2{background:var(--rojo-c);border-color:var(--rojo);color:var(--rojo)}
+.lb.s3{background:var(--ambar-c);border-color:var(--ambar);color:var(--ambar)}
+.lb.s4,.lb.s5{background:var(--verde-c);border-color:var(--verde);color:var(--verde)}
+textarea{width:100%;border:1px solid var(--borde);border-radius:7px;padding:9px 11px;font-size:12px;resize:vertical;min-height:60px;color:var(--texto);margin-top:6px}
+input[type=text],input[type=date],input[type=time],select{width:100%;border:1px solid var(--borde);border-radius:6px;padding:8px 10px;font-size:12px;color:var(--texto)}
+.btn{background:var(--verde);color:#fff;border:none;border-radius:8px;padding:13px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-top:10px}
+.info{background:var(--azul-c);border-left:3px solid #2563EB;border-radius:6px;padding:10px 13px;font-size:11px;color:#1e3a5f;line-height:1.7;margin-bottom:12px}
+.kpi-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.kpi{flex:1;min-width:75px;border-radius:8px;padding:9px 10px;text-align:center}
+.kpi-lbl{font-size:8px;font-weight:700;color:var(--texto3);margin-bottom:3px}
+.kpi-val{font-size:18px;font-weight:900}
+.bloque{border-radius:7px;padding:10px 13px;margin-bottom:7px;font-size:11px;line-height:1.75}
+.bt{font-size:10px;font-weight:800;margin-bottom:4px}
+.pie{background:var(--azul);color:rgba(255,255,255,.55);text-align:center;padding:10px;font-size:9px;margin-top:16px}
+
+#pw-gate{position:fixed;inset:0;z-index:99999;background:var(--azul);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;color:#fff;text-align:center}
+#pw-gate .g-ball{font-size:46px;margin-bottom:10px}
+#pw-gate .g-title{font-size:20px;font-weight:900;margin-bottom:4px}
+#pw-gate .g-sub{font-size:12px;opacity:.7;margin-bottom:22px}
+#pw-gate .g-card{background:#fff;color:var(--texto);border-radius:12px;padding:18px;width:100%;max-width:320px;text-align:left}
+#pw-gate label{font-size:12px;font-weight:700;display:block;margin-bottom:6px}
+#pw-gate input{width:100%;padding:11px;border:1px solid var(--borde);border-radius:8px;font-size:15px}
+#pw-gate .g-err{color:var(--rojo);font-size:12px;margin-top:8px;display:none}
+#pw-gate button{margin-top:14px;width:100%;max-width:320px;padding:12px;border:0;border-radius:8px;background:var(--verde);color:#fff;font-size:15px;font-weight:800;cursor:pointer}
+#pw-gate .g-firma{margin-top:22px;font-size:10px;opacity:.5;line-height:1.6}
+body.locked > *:not(#pw-gate){display:none!important}
+</style>
+</head>
+<body class="locked">
+<div id="pw-gate">
+  <div class="g-ball">⚽</div>
+  <div class="g-title">FFIB · Experiencia del Árbitro</div>
+  <div class="g-sub">Acceso restringido · Temporada 2026/2027</div>
+  <div class="g-card">
+    <label for="g-pw">Contraseña de acceso</label>
+    <input type="password" id="g-pw" placeholder="Introduce la contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter')gateCheck()">
+    <div class="g-err" id="g-err">Contraseña incorrecta. Inténtalo de nuevo.</div>
+  </div>
+  <button onclick="gateCheck()">Entrar</button>
+  <div class="g-firma">Jesús Neftalí Martínez Arredondo<br>Psicólogo General Sanitario · B-03305</div>
+</div>
+<script>
+const GATE_HASH='1aa420b2d17475a324e6bbe198366e7907fd8cdca68304c07f1495a46ea0a5b2';
+function gateOpen(){document.body.classList.remove('locked');var g=document.getElementById('pw-gate');if(g)g.remove();}
+async function gateHash(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+async function gateCheck(){const i=document.getElementById('g-pw');if(await gateHash(i.value.trim())===GATE_HASH){try{sessionStorage.setItem('ffib_ok','1')}catch(e){}gateOpen();}else{document.getElementById('g-err').style.display='block';i.value='';i.focus();}}
+try{if(sessionStorage.getItem('ffib_ok')==='1')gateOpen();}catch(e){}
+</script>
+
+<div class="header">
+  <div class="ht">
+    <div class="logo">⚽</div>
+    <div>
+      <div class="htitle">FFIB · Experiencia del Árbitro en el Campo</div>
+      <div class="hsub">Federació de Futbol de les Illes Balears · Psicología Deportiva · Neftalí Martínez B-03305</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="show('datos')">Datos</div>
+    <div class="tab" onclick="show('ambiente')">Ambiente</div>
+    <div class="tab" onclick="show('entrenadores')">Entrenadores</div>
+    <div class="tab" onclick="show('jugadores')">Jugadores</div>
+    <div class="tab" onclick="show('capitanes')">Capitanes</div>
+    <div class="tab" onclick="show('respeto')">Respeto</div>
+    <div class="tab" onclick="show('resultado')">📊 Resultado</div>
+  </div>
+</div>
+
+<!-- ══ DATOS ══════════════════════════════════════════════════════════════ -->
+<div class="pantalla v" id="tab-datos">
+  <div class="info" style="margin-top:14px">
+    Cuestionario de experiencia del árbitro en el campo. Tus respuestas son confidenciales y ayudan a mejorar el fútbol base en las Illes Balears.
+  </div>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><div class="q" style="margin-top:0">Fecha del partido</div><input type="date" id="d-fecha"></div>
+      <div><div class="q" style="margin-top:0">Hora de inicio</div><input type="time" id="d-hora"></div>
+      <div><div class="q" style="margin-top:0">Campo / Instalación</div><input type="text" id="d-campo" placeholder="Nombre del campo"></div>
+      <div><div class="q" style="margin-top:0">Municipio</div><input type="text" id="d-municipio" placeholder="Localidad"></div>
+      <div><div class="q" style="margin-top:0">Categoría</div>
+        <select id="d-cat">
+          <option value="">Selecciona categoría</option>
+          <option>Pre-Benjamín</option><option>Benjamín</option><option>Alevín</option>
+          <option>Infantil</option><option>Cadete</option><option>Juvenil</option>
+          <option>Amateur</option><option>Regional Preferente</option>
+        </select>
+      </div>
+      <div><div class="q" style="margin-top:0">Tipo de partido</div>
+        <select id="d-tipo">
+          <option>Liga</option><option>Copa</option><option>Pretemporada</option><option>Torneo</option>
+        </select>
+      </div>
+      <div><div class="q" style="margin-top:0">Equipo local</div><input type="text" id="d-local" placeholder="Nombre del equipo"></div>
+      <div><div class="q" style="margin-top:0">Equipo visitante</div><input type="text" id="d-visit" placeholder="Nombre del equipo"></div>
+      <div><div class="q" style="margin-top:0">Resultado final</div><input type="text" id="d-result" placeholder="2 - 1"></div>
+      <div><div class="q" style="margin-top:0">Nombre del árbitro</div><input type="text" id="d-arbitro" placeholder="Opcional — confidencial"></div>
+    </div>
+    <div class="q">Número de árbitros en el partido</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'d-narb')">1 árbitro</div>
+      <div class="pill pv" onclick="p(this,'d-narb')">Árbitro + 2 jueces de línea</div>
+      <div class="pill" onclick="p(this,'d-narb')">Árbitro + ayudantes</div>
+    </div>
+    <div class="q">¿Habías arbitrado ya a estos equipos anteriormente?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'d-previo')">✅ No, primera vez</div>
+      <div class="pill" onclick="p(this,'d-previo')">Al equipo local sí</div>
+      <div class="pill" onclick="p(this,'d-previo')">Al visitante sí</div>
+      <div class="pill pa" onclick="p(this,'d-previo')">A ambos equipos</div>
+    </div>
+  </div>
+  <button class="btn" onclick="show('ambiente')">Continuar → Ambiente</button>
+</div>
+
+<!-- ══ AMBIENTE ════════════════════════════════════════════════════════════ -->
+<div class="pantalla" id="tab-ambiente">
+  <div class="sec sa">🏟️ Ambiente general en el campo</div>
+  <div class="card">
+    <div class="q" style="margin-top:0">1. ¿Cómo valorarías el ambiente general durante el partido?</div>
+    <div class="stars" id="s-amb">
+      <span class="star" onclick="star('s-amb','amb',1)">★</span>
+      <span class="star" onclick="star('s-amb','amb',2)">★</span>
+      <span class="star" onclick="star('s-amb','amb',3)">★</span>
+      <span class="star" onclick="star('s-amb','amb',4)">★</span>
+      <span class="star" onclick="star('s-amb','amb',5)">★</span>
+    </div>
+    <div class="llab"><span>Muy negativo</span><span>Excelente</span></div>
+
+    <div class="q">2. ¿Cómo describirías el comportamiento de las gradas en general?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'gradas')">😊 Positivo y animoso</div>
+      <div class="pill pv" onclick="p(this,'gradas')">🙂 Tranquilo</div>
+      <div class="pill pa" onclick="p(this,'gradas')">😐 Tenso</div>
+      <div class="pill pr" onclick="p(this,'gradas')">😠 Hostil</div>
+      <div class="pill pr" onclick="p(this,'gradas')">🚨 Muy conflictivo</div>
+    </div>
+
+    <div class="q">3. ¿Hubo insultos o comentarios inapropiados desde las gradas dirigidos hacia ti?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'amb-ins-arb')">✅ No</div>
+      <div class="pill pa" onclick="p(this,'amb-ins-arb')">⚠️ Alguno puntual</div>
+      <div class="pill pr" onclick="p(this,'amb-ins-arb')">🔴 Varios</div>
+      <div class="pill pr" onclick="p(this,'amb-ins-arb')">🚨 Continuados y graves</div>
+    </div>
+
+    <div class="q">4. ¿Hubo insultos o comentarios inapropiados hacia los jugadores desde las gradas?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'amb-ins-jug')">✅ No</div>
+      <div class="pill pa" onclick="p(this,'amb-ins-jug')">⚠️ Alguno puntual</div>
+      <div class="pill pr" onclick="p(this,'amb-ins-jug')">🔴 Varios</div>
+      <div class="pill pr" onclick="p(this,'amb-ins-jug')">🚨 Continuados y graves</div>
+    </div>
+
+    <div class="q">5. ¿Las familias en las gradas respetaron el desarrollo del partido?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'amb-familias')">✅ Sí, completamente</div>
+      <div class="pill pv" onclick="p(this,'amb-familias')">🙂 En general sí</div>
+      <div class="pill pa" onclick="p(this,'amb-familias')">😐 Con excepciones</div>
+      <div class="pill pr" onclick="p(this,'amb-familias')">❌ No, fueron un problema</div>
+    </div>
+  </div>
+
+  <div class="sec sa">🏗️ Instalaciones y organización</div>
+  <div class="card">
+    <div class="q" style="margin-top:0">6. ¿Cómo valorarías las instalaciones del campo?</div>
+    <div class="stars" id="s-inst">
+      <span class="star" onclick="star('s-inst','inst',1)">★</span>
+      <span class="star" onclick="star('s-inst','inst',2)">★</span>
+      <span class="star" onclick="star('s-inst','inst',3)">★</span>
+      <span class="star" onclick="star('s-inst','inst',4)">★</span>
+      <span class="star" onclick="star('s-inst','inst',5)">★</span>
+    </div>
+    <div class="llab"><span>Muy deficientes</span><span>Excelentes</span></div>
+
+    <div class="q">7. ¿Cómo valorarías la organización del partido por parte del equipo local?</div>
+    <div class="stars" id="s-org">
+      <span class="star" onclick="star('s-org','org',1)">★</span>
+      <span class="star" onclick="star('s-org','org',2)">★</span>
+      <span class="star" onclick="star('s-org','org',3)">★</span>
+      <span class="star" onclick="star('s-org','org',4)">★</span>
+      <span class="star" onclick="star('s-org','org',5)">★</span>
+    </div>
+    <div class="llab"><span>Muy deficiente</span><span>Excelente</span></div>
+
+    <div class="q">8. ¿El vestuario asignado al árbitro estaba en condiciones adecuadas?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'vest')">✅ Sí, en buen estado</div>
+      <div class="pill pa" onclick="p(this,'vest')">😐 Aceptable</div>
+      <div class="pill pr" onclick="p(this,'vest')">❌ Deficiente</div>
+      <div class="pill" onclick="p(this,'vest')">— No había vestuario</div>
+    </div>
+
+    <div class="q">9. ¿Hubo alguna incidencia relevante en el entorno del campo (accesos, parking, señalización)?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'amb-incid')">✅ No</div>
+      <div class="pill pa" onclick="p(this,'amb-incid')">⚠️ Leve</div>
+      <div class="pill pr" onclick="p(this,'amb-incid')">🔴 Importante</div>
+    </div>
+    <textarea id="amb-incid-txt" placeholder="Describe brevemente si la hubo..."></textarea>
+  </div>
+  <button class="btn" onclick="show('entrenadores')">Continuar → Entrenadores</button>
+</div>
+
+<!-- ══ ENTRENADORES ═════════════════════════════════════════════════════════ -->
+<div class="pantalla" id="tab-entrenadores">
+  <div class="sec sv">🧑‍🏫 Comportamiento de los entrenadores</div>
+  <div class="card">
+    <div class="q" style="margin-top:0">10. ¿Cómo valorarías el comportamiento general del entrenador/cuerpo técnico local?</div>
+    <div class="stars" id="s-ent-l">
+      <span class="star" onclick="star('s-ent-l','ent-l',1)">★</span>
+      <span class="star" onclick="star('s-ent-l','ent-l',2)">★</span>
+      <span class="star" onclick="star('s-ent-l','ent-l',3)">★</span>
+      <span class="star" onclick="star('s-ent-l','ent-l',4)">★</span>
+      <span class="star" onclick="star('s-ent-l','ent-l',5)">★</span>
+    </div>
+    <div class="llab"><span>Muy negativo</span><span>Excelente</span></div>
+
+    <div class="q">11. ¿Cómo valorarías el comportamiento general del entrenador/cuerpo técnico visitante?</div>
+    <div class="stars" id="s-ent-v">
+      <span class="star" onclick="star('s-ent-v','ent-v',1)">★</span>
+      <span class="star" onclick="star('s-ent-v','ent-v',2)">★</span>
+      <span class="star" onclick="star('s-ent-v','ent-v',3)">★</span>
+      <span class="star" onclick="star('s-ent-v','ent-v',4)">★</span>
+      <span class="star" onclick="star('s-ent-v','ent-v',5)">★</span>
+    </div>
+    <div class="llab"><span>Muy negativo</span><span>Excelente</span></div>
+
+    <div class="q">12. ¿Algún entrenador cuestionó tus decisiones de forma inapropiada?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'ent-cuest')">✅ No</div>
+      <div class="pill pa" onclick="p(this,'ent-cuest')">⚠️ Alguna vez puntualmente</div>
+      <div class="pill pr" onclick="p(this,'ent-cuest')">🔴 Con frecuencia</div>
+      <div class="pill pr" onclick="p(this,'ent-cuest')">🚨 De forma continuada y grave</div>
+    </div>
+
+    <div class="q">13. ¿Los entrenadores mantuvieron a sus jugadores bajo control en los momentos de tensión?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'ent-control')">✅ Sí, intervinieron activamente</div>
+      <div class="pill pv" onclick="p(this,'ent-control')">🙂 En general sí</div>
+      <div class="pill pa" onclick="p(this,'ent-control')">😐 Solo a veces</div>
+      <div class="pill pr" onclick="p(this,'ent-control')">❌ No intervinieron</div>
+      <div class="pill pr" onclick="p(this,'ent-control')">🚨 Ellos mismos escalaron el conflicto</div>
+    </div>
+
+    <div class="q">14. ¿Los entrenadores respetaron la zona técnica y las normas de conducta del banquillo?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'ent-zona')">✅ Sí, ambos equipos</div>
+      <div class="pill pa" onclick="p(this,'ent-zona')">⚠️ Con alguna excepción</div>
+      <div class="pill pr" onclick="p(this,'ent-zona')">🔴 El local no la respetó</div>
+      <div class="pill pr" onclick="p(this,'ent-zona')">🔴 El visitante no la respetó</div>
+      <div class="pill pr" onclick="p(this,'ent-zona')">🚨 Ninguno la respetó</div>
+    </div>
+
+    <div class="q">15. ¿Hubo algún entrenador que requiriera una amonestación o expulsión?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'ent-sancion')">✅ No</div>
+      <div class="pill pa" onclick="p(this,'ent-sancion')">⚠️ Amonestación verbal</div>
+      <div class="pill pr" onclick="p(this,'ent-sancion')">🔴 Fue amonestado</div>
+      <div class="pill pr" onclick="p(this,'ent-sancion')">🚨 Fue expulsado</div>
+    </div>
+    <textarea id="ent-obs" placeholder="Observaciones sobre el comportamiento de los entrenadores (opcional)..."></textarea>
+  </div>
+  <button class="btn" onclick="show('jugadores')">Continuar → Jugadores</button>
+</div>
+
+<!-- ══ JUGADORES ════════════════════════════════════════════════════════════ -->
+<div class="pantalla" id="tab-jugadores">
+  <div class="sec sv">⚽ Comportamiento de los jugadores</div>
+  <div class="card">
+    <div class="q" style="margin-top:0">16. ¿Cómo valorarías el comportamiento general de los jugadores del equipo local?</div>
+    <div class="stars" id="s-jug-l">
+      <span class="star" onclick="star('s-jug-l','jug-l',1)">★</span>
+      <span class="star" onclick="star('s-jug-l','jug-l',2)">★</span>
+      <span class="star" onclick="star('s-jug-l','jug-l',3)">★</span>
+      <span class="star" onclick="star('s-jug-l','jug-l',4)">★</span>
+      <span class="star" onclick="star('s-jug-l','jug-l',5)">★</span>
+    </div>
+    <div class="llab"><span>Muy negativo</span><span>Excelente</span></div>
+
+    <div class="q">17. ¿Cómo valorarías el comportamiento general de los jugadores del equipo visitante?</div>
+    <div class="stars" id="s-jug-v">
+      <span class="star" onclick="star('s-jug-v','jug-v',1)">★</span>
+      <span class="star" onclick="star('s-jug-v','jug-v',2)">★</span>
+      <span class="star" onclick="star('s-jug-v','jug-v',3)">★</span>
+      <span class="star" onclick="star('s-jug-v','jug-v',4)">★</span>
+      <span class="star" onclick="star('s-jug-v','jug-v',5)">★</span>
+    </div>
+    <div class="llab"><span>Muy negativo</span><span>Excelente</span></div>
+
+    <div class="q">18. ¿Los jugadores aceptaron tus decisiones con deportividad?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'jug-acept')">✅ Sí, en general</div>
+      <div class="pill pa" onclick="p(this,'jug-acept')">😐 Con alguna protesta puntual</div>
+      <div class="pill pr" onclick="p(this,'jug-acept')">🔴 Protestas frecuentes</div>
+      <div class="pill pr" onclick="p(this,'jug-acept')">🚨 Actitud muy conflictiva</div>
+    </div>
+
+    <div class="q">19. ¿Hubo conductas antideportivas graves por parte de jugadores?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'jug-antidep')">✅ No</div>
+      <div class="pill pa" onclick="p(this,'jug-antidep')">⚠️ Leve</div>
+      <div class="pill pr" onclick="p(this,'jug-antidep')">🔴 Grave</div>
+      <div class="pill pr" onclick="p(this,'jug-antidep')">🚨 Muy grave</div>
+    </div>
+    <textarea id="jug-antidep-txt" placeholder="Describe brevemente si la hubo: tipo de conducta, equipo, momento del partido..."></textarea>
+
+    <div class="q">20. ¿Hubo algún jugador que realizara gestos o comentarios ofensivos hacia ti?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'jug-ofens')">✅ No</div>
+      <div class="pill pa" onclick="p(this,'jug-ofens')">⚠️ Uno puntualmente</div>
+      <div class="pill pr" onclick="p(this,'jug-ofens')">🔴 Varios jugadores</div>
+      <div class="pill pr" onclick="p(this,'jug-ofens')">🚨 De forma reiterada y grave</div>
+    </div>
+
+    <div class="q">21. Número de tarjetas mostradas durante el partido</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:5px">
+      <div>
+        <div style="font-size:10px;color:var(--texto3);margin-bottom:4px">🟨 Amarillas</div>
+        <div class="pills">
+          <div class="pill pv" onclick="p(this,'tarj-am')">0</div>
+          <div class="pill pv" onclick="p(this,'tarj-am')">1</div>
+          <div class="pill pa" onclick="p(this,'tarj-am')">2–3</div>
+          <div class="pill pr" onclick="p(this,'tarj-am')">4+</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--texto3);margin-bottom:4px">🟥 Rojas</div>
+        <div class="pills">
+          <div class="pill pv" onclick="p(this,'tarj-ro')">0</div>
+          <div class="pill pa" onclick="p(this,'tarj-ro')">1</div>
+          <div class="pill pr" onclick="p(this,'tarj-ro')">2+</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="q">22. ¿Hubo alguna situación de juego brusco o violento que consideres relevante?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'jug-brusco')">✅ No</div>
+      <div class="pill pa" onclick="p(this,'jug-brusco')">⚠️ Alguna entrada dura</div>
+      <div class="pill pr" onclick="p(this,'jug-brusco')">🔴 Juego violento puntual</div>
+      <div class="pill pr" onclick="p(this,'jug-brusco')">🚨 Violencia física grave</div>
+    </div>
+  </div>
+  <button class="btn" onclick="show('capitanes')">Continuar → Capitanes</button>
+</div>
+
+<!-- ══ CAPITANES ════════════════════════════════════════════════════════════ -->
+<div class="pantalla" id="tab-capitanes">
+  <div class="sec sa">🏅 Función de los capitanes</div>
+  <div class="card">
+    <div class="q" style="margin-top:0">23. ¿El capitán del equipo local ejerció bien su función de mediación entre jugadores y árbitro?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'cap-l')">✅ Muy bien — calmó a sus compañeros</div>
+      <div class="pill pv" onclick="p(this,'cap-l')">🙂 Bien</div>
+      <div class="pill pa" onclick="p(this,'cap-l')">😐 Regular — no intervino cuando debía</div>
+      <div class="pill pr" onclick="p(this,'cap-l')">❌ Mal — fue parte del conflicto</div>
+      <div class="pill" onclick="p(this,'cap-l')">— No se pudo valorar</div>
+    </div>
+
+    <div class="q">24. ¿El capitán del equipo visitante ejerció bien su función de mediación?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'cap-v')">✅ Muy bien — calmó a sus compañeros</div>
+      <div class="pill pv" onclick="p(this,'cap-v')">🙂 Bien</div>
+      <div class="pill pa" onclick="p(this,'cap-v')">😐 Regular — no intervino cuando debía</div>
+      <div class="pill pr" onclick="p(this,'cap-v')">❌ Mal — fue parte del conflicto</div>
+      <div class="pill" onclick="p(this,'cap-v')">— No se pudo valorar</div>
+    </div>
+
+    <div class="q">25. ¿Algún capitán intentó influir en tus decisiones de forma inadecuada o ejerció presión indebida?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'cap-pres')">✅ No, ninguno</div>
+      <div class="pill pa" onclick="p(this,'cap-pres')">⚠️ Presión leve y puntual</div>
+      <div class="pill pr" onclick="p(this,'cap-pres')">🔴 Presión notable y reiterada</div>
+      <div class="pill pr" onclick="p(this,'cap-pres')">🚨 Presión grave — faltó al respeto</div>
+    </div>
+
+    <div class="q">26. ¿Los capitanes acataron las decisiones de tarjeta o expulsión con deportividad?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'cap-acept')">✅ Sí, ambos</div>
+      <div class="pill pa" onclick="p(this,'cap-acept')">😐 Con alguna queja</div>
+      <div class="pill pr" onclick="p(this,'cap-acept')">🔴 Con protestas notables</div>
+      <div class="pill pr" onclick="p(this,'cap-acept')">🚨 Con actitud muy conflictiva</div>
+    </div>
+
+    <div class="q">27. En los momentos de mayor tensión, ¿los capitanes contribuyeron a calmar la situación?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'cap-calma')">✅ Sí, ambos actuaron bien</div>
+      <div class="pill pv" onclick="p(this,'cap-calma')">🙂 Uno sí, el otro no</div>
+      <div class="pill pa" onclick="p(this,'cap-calma')">😐 No intervinieron</div>
+      <div class="pill pr" onclick="p(this,'cap-calma')">🔴 Empeoraron la situación</div>
+    </div>
+
+    <div class="q">28. ¿Hubo una comunicación fluida y respetuosa entre tú y los capitanes?</div>
+    <div class="likert">
+      <button class="lb" onclick="lb(this,'cap-com',1)">1</button>
+      <button class="lb" onclick="lb(this,'cap-com',2)">2</button>
+      <button class="lb" onclick="lb(this,'cap-com',3)">3</button>
+      <button class="lb" onclick="lb(this,'cap-com',4)">4</button>
+      <button class="lb" onclick="lb(this,'cap-com',5)">5</button>
+    </div>
+    <div class="llab"><span>Ninguna fluidez</span><span>Comunicación excelente</span></div>
+    <textarea id="cap-obs" placeholder="Observaciones sobre los capitanes (opcional)..."></textarea>
+  </div>
+  <button class="btn" onclick="show('respeto')">Continuar → Respeto y valoración</button>
+</div>
+
+<!-- ══ RESPETO ════════════════════════════════════════════════════════════ -->
+<div class="pantalla" id="tab-respeto">
+  <div class="sec sam">🤝 Respeto y valoración global</div>
+  <div class="card">
+    <div class="q" style="margin-top:0">29. ¿En qué medida te has sentido respetado como árbitro durante el partido?</div>
+    <div class="likert">
+      <button class="lb" onclick="lb(this,'respeto',1)">1</button>
+      <button class="lb" onclick="lb(this,'respeto',2)">2</button>
+      <button class="lb" onclick="lb(this,'respeto',3)">3</button>
+      <button class="lb" onclick="lb(this,'respeto',4)">4</button>
+      <button class="lb" onclick="lb(this,'respeto',5)">5</button>
+    </div>
+    <div class="llab"><span>Nada respetado</span><span>Totalmente respetado</span></div>
+
+    <div class="q">30. ¿Hubo algún momento en que te sintieras en riesgo, intimidado o en situación de inseguridad?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'riesgo')">✅ No</div>
+      <div class="pill pa" onclick="p(this,'riesgo')">⚠️ Tensión puntual pero manejable</div>
+      <div class="pill pr" onclick="p(this,'riesgo')">🔴 Me sentí intimidado</div>
+      <div class="pill pr" onclick="p(this,'riesgo')">🚨 Situación de riesgo real</div>
+    </div>
+    <textarea id="riesgo-txt" placeholder="Describe si lo hubo: qué ocurrió, cuándo, quién estuvo implicado..."></textarea>
+
+    <div class="q">31. ¿El equipo local contribuyó a que el partido se desarrollara en un ambiente respetuoso?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'resp-local')">✅ Sí, claramente</div>
+      <div class="pill pv" onclick="p(this,'resp-local')">🙂 En general sí</div>
+      <div class="pill pa" onclick="p(this,'resp-local')">😐 Indiferente</div>
+      <div class="pill pr" onclick="p(this,'resp-local')">❌ No contribuyó</div>
+      <div class="pill pr" onclick="p(this,'resp-local')">🚨 Fue parte del problema</div>
+    </div>
+
+    <div class="q">32. ¿Cómo valorarías el nivel de fair play general del partido?</div>
+    <div class="likert">
+      <button class="lb" onclick="lb(this,'fairplay',1)">1</button>
+      <button class="lb" onclick="lb(this,'fairplay',2)">2</button>
+      <button class="lb" onclick="lb(this,'fairplay',3)">3</button>
+      <button class="lb" onclick="lb(this,'fairplay',4)">4</button>
+      <button class="lb" onclick="lb(this,'fairplay',5)">5</button>
+    </div>
+    <div class="llab"><span>Muy bajo</span><span>Muy alto</span></div>
+  </div>
+
+  <div class="sec sam">📊 Valoración global y propuestas</div>
+  <div class="card">
+    <div class="q" style="margin-top:0">33. Valoración global de tu experiencia como árbitro en este partido</div>
+    <div class="stars" id="s-global">
+      <span class="star" onclick="star('s-global','global',1)">★</span>
+      <span class="star" onclick="star('s-global','global',2)">★</span>
+      <span class="star" onclick="star('s-global','global',3)">★</span>
+      <span class="star" onclick="star('s-global','global',4)">★</span>
+      <span class="star" onclick="star('s-global','global',5)">★</span>
+    </div>
+    <div class="llab"><span>Muy negativa</span><span>Excelente</span></div>
+
+    <div class="q">34. ¿Volverías a arbitrar con estos equipos / en este campo?</div>
+    <div class="pills">
+      <div class="pill pv" onclick="p(this,'volveria')">✅ Sí, sin duda</div>
+      <div class="pill pv" onclick="p(this,'volveria')">🙂 Probablemente sí</div>
+      <div class="pill pa" onclick="p(this,'volveria')">😐 Con reservas</div>
+      <div class="pill pr" onclick="p(this,'volveria')">❌ Preferiría no</div>
+      <div class="pill pr" onclick="p(this,'volveria')">🚨 No, definitivamente</div>
+    </div>
+
+    <div class="q">35. ¿Qué destacarías positivamente de este partido?</div>
+    <textarea id="pos-txt" placeholder="Aspectos que funcionaron bien: clima, actitud, organización..."></textarea>
+
+    <div class="q">36. ¿Qué propones para mejorar la experiencia del árbitro en futuros partidos?</div>
+    <textarea id="mejora-txt" placeholder="Propuestas concretas dirigidas a los clubs, la FFIB o los delegados..."></textarea>
+
+    <div class="q">37. ¿Tienes algún comentario adicional que quieras trasladar a la FFIB o al psicólogo del programa?</div>
+    <textarea id="coment-txt" placeholder="Espacio libre y totalmente confidencial..."></textarea>
+  </div>
+
+  <div style="background:#F0FDF4;border-left:3px solid #065F46;border-radius:6px;padding:10px 13px;font-size:11px;color:#065F46;line-height:1.7;margin-bottom:8px">
+    🔒 Tus respuestas son estrictamente confidenciales y están protegidas por el secreto profesional. Solo el psicólogo del programa tendrá acceso a los datos individuales.
+  </div>
+  <button class="btn" id="btn-enviar" onclick="generarResult()">📤 Enviar y ver resultado</button>
+</div>
+
+<!-- ══ RESULTADO ══════════════════════════════════════════════════════════ -->
+<div class="pantalla" id="tab-resultado">
+  <div id="result-contenido" style="margin-top:14px">
+    <div class="info">Completa todas las secciones para ver tu resultado personalizado.</div>
+  </div>
+</div>
+
+<div class="pie">
+  FFIB · Federació de Futbol de les Illes Balears · Programa de Psicología del Árbitro<br>
+  Neftalí Martínez Arredondo · Psicólogo General Sanitario B-03305 · neftalimartinezarredondo@gmail.com
+</div>
+
+<script>
+const _d = {};
+const GAS = 'https://script.google.com/macros/s/AKfycbyqhbmjguV1-B9WG_mUic-L_VSzucZnvBLn8CdQlnWCzb4_1C-yEt4ltpAk3e7t1Hm1aQ/exec';
+// ID único de esta evaluación: si el árbitro corrige algo y vuelve a enviar, se actualiza la misma fila
+const ARB_ID = 'arb_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+const CAMPOS_TEXTO = ['d-fecha','d-hora','d-campo','d-municipio','d-cat','d-tipo','d-local','d-visit','d-result','d-arbitro',
+  'amb-incid-txt','ent-obs','jug-antidep-txt','cap-obs','riesgo-txt','pos-txt','mejora-txt','coment-txt'];
+
+function recogerCampos() {
+  CAMPOS_TEXTO.forEach(id => { const el = document.getElementById(id); if (el) _d[id] = el.value.trim(); });
+}
+
+const COLA_ARB = 'ffib_pendiente_v1';
+
+async function postArbitro(payload) {
+  const res = await fetch(GAS, {
+    method: 'POST',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if (!data || !data.ok) throw new Error((data && data.error) || 'Sin confirmación');
+}
+
+async function enviarArbitro(resumen) {
+  const est = document.getElementById('envio-estado');
+  const btn = document.getElementById('btn-enviar');
+  const payload = { ficha: 'FFIB_Arbitros', id: ARB_ID, datos: _d, resumen: resumen, timestamp: new Date().toISOString() };
+  try { localStorage.setItem(COLA_ARB, JSON.stringify(payload)); } catch(e) {}   // copia de seguridad
+  if (est) { est.style.background='#F3F4F6'; est.style.color='#374151'; est.textContent='⏳ Enviando respuestas…'; }
+  if (btn) btn.disabled = true;
+  try {
+    await postArbitro(payload);
+    try { localStorage.removeItem(COLA_ARB); } catch(e) {}
+    if (est) { est.style.background='#D1FAE5'; est.style.color='#065F46'; est.textContent='✅ Respuestas recibidas y guardadas. ¡Gracias por tu colaboración!'; }
+  } catch(e) {
+    if (est) { est.style.background='#FEF3C7'; est.style.color='#92400E';
+      est.innerHTML='📶 No se ha podido confirmar el envío. Tus respuestas están guardadas en este dispositivo y se enviarán solas al recuperar conexión. <u style="cursor:pointer" onclick="generarResult()">Reintentar ahora</u>'; }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// Reenvío automático si quedó algo pendiente (al abrir la página o al volver la conexión)
+async function reenviarArbPendiente() {
+  let p = null;
+  try { p = JSON.parse(localStorage.getItem(COLA_ARB) || 'null'); } catch(e) {}
+  if (!p) return;
+  try { await postArbitro(p); localStorage.removeItem(COLA_ARB); } catch(e) {}
+}
+window.addEventListener('online', reenviarArbPendiente);
+setTimeout(reenviarArbPendiente, 1500);
+
+function show(id) {
+  document.querySelectorAll('.pantalla').forEach(p=>p.classList.remove('v'));
+  document.getElementById('tab-'+id).classList.add('v');
+  const tabs=['datos','ambiente','entrenadores','jugadores','capitanes','respeto','resultado'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===id));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function star(cid, key, val) {
+  document.getElementById(cid).querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<val));
+  _d[key]=val;
+}
+
+function p(pill, key) {
+  pill.parentElement.querySelectorAll('.pill').forEach(x=>x.classList.remove('sel'));
+  pill.classList.add('sel');
+  _d[key]=pill.textContent.trim();
+}
+
+function lb(btn, key, val) {
+  btn.parentElement.querySelectorAll('.lb').forEach(b=>b.className='lb');
+  btn.classList.add('s'+val);
+  _d[key]=val;
+}
+
+function avg(...keys) {
+  const v = keys.map(k=>_d[k]).filter(x=>x!=null&&!isNaN(x));
+  return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null;
+}
+
+function st(v) { return v==null?'—':'★'.repeat(Math.round(v))+'☆'.repeat(5-Math.round(v)); }
+function col(v){ return v==null?'#9CA3AF':v>=4?'#065F46':v>=3?'#B45309':'#991B1B'; }
+function bgc(v){ return v==null?'#F3F4F6':v>=4?'#D1FAE5':v>=3?'#FEF3C7':'#FEE2E2'; }
+
+function generarResult() {
+  recogerCampos();
+  const mAmb  = avg('amb','inst','org');
+  const mEnt  = avg('ent-l','ent-v');
+  const mJug  = avg('jug-l','jug-v');
+  const mCap  = avg('cap-com');
+  const mResp = avg('respeto','fairplay');
+  const mGlob = _d['global'] || avg('amb','ent-l','ent-v','jug-l','jug-v','respeto');
+
+  // Alertas automáticas
+  const alertas = [];
+  if (_d['riesgo']&&_d['riesgo'].includes('riesgo real')) alertas.push('🚨 URGENTE: El árbitro reporta una situación de riesgo real durante el partido.');
+  if (_d['amb-ins-arb']&&(_d['amb-ins-arb'].includes('Continuados')||_d['amb-ins-arb'].includes('Varios'))) alertas.push('⚠️ Insultos reiterados desde las gradas hacia el árbitro.');
+  if (_d['ent-cuest']&&_d['ent-cuest'].includes('grave')) alertas.push('⚠️ Cuestionamiento grave y continuado de decisiones por parte del cuerpo técnico.');
+  if (_d['ent-sancion']&&_d['ent-sancion'].includes('expulsado')) alertas.push('🔴 Un entrenador fue expulsado durante el partido.');
+  if (_d['jug-antidep']&&(_d['jug-antidep'].includes('Grave')||_d['jug-antidep'].includes('grave'))) alertas.push('⚠️ Conducta antideportiva grave registrada por parte de jugadores.');
+  if (_d['jug-brusco']&&_d['jug-brusco'].includes('grave')) alertas.push('🔴 Violencia física grave durante el partido.');
+  if ((_d['respeto']||5)<3) alertas.push('⚠️ El árbitro se sintió poco o nada respetado durante el partido.');
+  if (_d['volveria']&&(_d['volveria'].includes('no')||_d['volveria'].includes('definitivamente'))) alertas.push('🚩 El árbitro no desea volver a arbitrar con estos equipos o en este campo.');
+
+  // Aspectos positivos
+  const pos = [];
+  if ((_d['amb']||0)>=4) pos.push('Ambiente general muy positivo en el campo.');
+  if ((_d['ent-l']||0)>=4&&(_d['ent-v']||0)>=4) pos.push('Buen comportamiento de ambos cuerpos técnicos.');
+  if (_d['cap-l']&&_d['cap-l'].includes('bien')) pos.push('El capitán local ejerció bien su función mediadora.');
+  if (_d['cap-v']&&_d['cap-v'].includes('bien')) pos.push('El capitán visitante ejerció bien su función mediadora.');
+  if ((_d['respeto']||0)>=4) pos.push('El árbitro se sintió respetado durante todo el partido.');
+  if ((_d['fairplay']||0)>=4) pos.push('Alto nivel de fair play en el partido.');
+  if (_d['volveria']&&_d['volveria'].includes('duda')) pos.push('El árbitro repetiría con estos equipos sin dudarlo.');
+  if (_d['ent-control']&&_d['ent-control'].includes('activamente')) pos.push('Los entrenadores mantuvieron activamente a sus jugadores bajo control.');
+
+  const html = `
+    <div style="background:#1C2B4A;color:#fff;border-radius:8px 8px 0 0;padding:12px 16px">
+      <div style="font-size:14px;font-weight:800">Resultado · ${(_d['d-local']||'Local')+' vs '+(_d['d-visit']||'Visitante')}</div>
+      <div style="font-size:10px;opacity:.7">${_d['d-fecha']||'—'} · ${_d['d-campo']||'—'} · ${_d['d-cat']||'—'}</div>
+    </div>
+    <div style="border:1px solid var(--borde);border-top:none;border-radius:0 0 8px 8px;padding:14px;background:#fff;margin-bottom:12px">
+
+      <div class="kpi-row">
+        <div class="kpi" style="background:${bgc(mAmb)}"><div class="kpi-lbl">AMBIENTE</div><div class="kpi-val" style="color:${col(mAmb)}">${mAmb?mAmb.toFixed(1):'—'}</div></div>
+        <div class="kpi" style="background:${bgc(mEnt)}"><div class="kpi-lbl">ENTRENADORES</div><div class="kpi-val" style="color:${col(mEnt)}">${mEnt?mEnt.toFixed(1):'—'}</div></div>
+        <div class="kpi" style="background:${bgc(mJug)}"><div class="kpi-lbl">JUGADORES</div><div class="kpi-val" style="color:${col(mJug)}">${mJug?mJug.toFixed(1):'—'}</div></div>
+        <div class="kpi" style="background:${bgc(mCap)}"><div class="kpi-lbl">CAPITANES</div><div class="kpi-val" style="color:${col(mCap)}">${mCap?mCap.toFixed(1):'—'}/5</div></div>
+        <div class="kpi" style="background:${bgc(mResp)}"><div class="kpi-lbl">RESPETO</div><div class="kpi-val" style="color:${col(mResp)}">${mResp?mResp.toFixed(1):'—'}</div></div>
+        <div class="kpi" style="background:${bgc(mGlob)}"><div class="kpi-lbl">GLOBAL</div><div class="kpi-val" style="color:${col(mGlob)}">${st(mGlob)}</div></div>
+      </div>
+
+      ${alertas.length?`<div style="background:#FEF2F2;border:2px solid #FECACA;border-radius:7px;padding:10px 13px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:800;color:#991B1B;margin-bottom:6px">🚨 Alertas — Requieren atención de la FFIB</div>
+        ${alertas.map(a=>`<div style="font-size:11px;color:#7F1D1D;margin-bottom:4px">${a}</div>`).join('')}
+      </div>`:''}
+
+      ${pos.length?`<div style="background:#F0FDF4;border:2px solid #A7F3D0;border-radius:7px;padding:10px 13px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:800;color:#065F46;margin-bottom:6px">✅ Aspectos positivos</div>
+        ${pos.map(p=>`<div style="font-size:11px;color:#064E3B;margin-bottom:3px">· ${p}</div>`).join('')}
+      </div>`:''}
+
+      <div style="font-size:11px;font-weight:800;color:var(--azul);margin:12px 0 7px">Detalle por ámbito</div>
+
+      <div class="bloque" style="background:#DBEAFE;border-left:3px solid #2563EB">
+        <div class="bt" style="color:#1d4ed8">🏟️ Ambiente y gradas</div>
+        Valoración: <b>${st(_d['amb'])}</b> &nbsp;·&nbsp; Gradas: <b>${_d['gradas']||'—'}</b><br>
+        Insultos al árbitro: <b>${_d['amb-ins-arb']||'—'}</b> &nbsp;·&nbsp; Insultos a jugadores: <b>${_d['amb-ins-jug']||'—'}</b><br>
+        Familias: <b>${_d['amb-familias']||'—'}</b> &nbsp;·&nbsp; Instalaciones: <b>${st(_d['inst'])}</b> &nbsp;·&nbsp; Organización: <b>${st(_d['org'])}</b>
+      </div>
+
+      <div class="bloque" style="background:#FEF3C7;border-left:3px solid #B45309">
+        <div class="bt" style="color:#B45309">🧑‍🏫 Entrenadores</div>
+        Local: <b>${st(_d['ent-l'])}</b> &nbsp;·&nbsp; Visitante: <b>${st(_d['ent-v'])}</b><br>
+        Cuestionamiento decisiones: <b>${_d['ent-cuest']||'—'}</b><br>
+        Control de jugadores: <b>${_d['ent-control']||'—'}</b> &nbsp;·&nbsp; Zona técnica: <b>${_d['ent-zona']||'—'}</b><br>
+        Sanción aplicada: <b>${_d['ent-sancion']||'—'}</b>
+      </div>
+
+      <div class="bloque" style="background:#FEE2E2;border-left:3px solid #991B1B">
+        <div class="bt" style="color:#991B1B">⚽ Jugadores</div>
+        Local: <b>${st(_d['jug-l'])}</b> &nbsp;·&nbsp; Visitante: <b>${st(_d['jug-v'])}</b><br>
+        Aceptación decisiones: <b>${_d['jug-acept']||'—'}</b><br>
+        Conducta antideportiva: <b>${_d['jug-antidep']||'—'}</b> &nbsp;·&nbsp; Tarjetas amarillas: <b>${_d['tarj-am']||'—'}</b> &nbsp;·&nbsp; Rojas: <b>${_d['tarj-ro']||'—'}</b>
+      </div>
+
+      <div class="bloque" style="background:#F0FDF4;border-left:3px solid #065F46">
+        <div class="bt" style="color:#065F46">🏅 Capitanes</div>
+        Capitán local: <b>${_d['cap-l']||'—'}</b><br>
+        Capitán visitante: <b>${_d['cap-v']||'—'}</b><br>
+        Presión indebida: <b>${_d['cap-pres']||'—'}</b> &nbsp;·&nbsp; Comunicación árbitro-capitanes: <b>${_d['cap-com']||'—'}/5</b>
+      </div>
+
+      <div class="bloque" style="background:#F3F4F6;border-left:3px solid #6B7280">
+        <div class="bt" style="color:#374151">🤝 Respeto y valoración final</div>
+        Respeto percibido: <b>${_d['respeto']||'—'}/5</b> &nbsp;·&nbsp; Fair play: <b>${_d['fairplay']||'—'}/5</b><br>
+        Riesgo/intimidación: <b>${_d['riesgo']||'—'}</b><br>
+        ¿Volvería a arbitrar?: <b>${_d['volveria']||'—'}</b>
+      </div>
+
+      ${document.getElementById('mejora-txt').value?`<div class="bloque" style="background:#DBEAFE;border-left:3px solid #2563EB">
+        <div class="bt" style="color:#1d4ed8">💡 Propuestas de mejora</div>
+        ${document.getElementById('mejora-txt').value}
+      </div>`:''}
+
+      <div style="background:#D1FAE5;border-left:3px solid #065F46;border-radius:6px;padding:10px 13px;text-align:center;font-size:11px;font-weight:700;color:#065F46;margin:10px 0">
+        Informe generado por el Programa de Psicología del Árbitro · FFIB · Temporada 2026/2027
+      </div>
+
+      <div style="font-size:8px;color:#9CA3AF;line-height:1.5;border-top:1px solid var(--borde);padding-top:8px">
+        Respuestas estrictamente confidenciales. Tratamiento de datos: JESUS NEFTALI MARTINEZ ARREDONDO · Psicólogo General Sanitario B-03305 · Tous i Maroto Nº5, 07001 Palma de Mallorca · neftalimartinezarredondo@gmail.com · RGPD (UE) 2016/679 · LOPDGDD 3/2018.
+      </div>
+    </div>`;
+
+  document.getElementById('result-contenido').innerHTML =
+    '<div id="envio-estado" style="border-radius:8px;padding:10px 13px;font-size:12px;font-weight:700;margin-bottom:10px"></div>' + html;
+  show('resultado');
+  enviarArbitro({ ambiente: mAmb, entrenadores: mEnt, jugadores: mJug, capitanes: mCap,
+                  respeto: mResp, global: mGlob, alertas: alertas, positivos: pos });
+}
+</script>
+</body>
+</html>
