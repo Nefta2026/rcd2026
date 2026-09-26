@@ -77,8 +77,14 @@ body.locked > *:not(#pw-gate){display:none!important}
   <div class="g-ball">⚽</div>
   <div class="g-title">FFIB · Experiencia del Árbitro</div>
   <div class="g-club" id="g-club" style="font-size:17px;font-weight:900;margin:8px 0 2px">RCD Santa Ponça</div>
-  <div class="g-campo" id="g-campo" style="font-size:13px;opacity:.85;margin-bottom:6px">📍 Polideportivo Municipal de Santa Ponça</div>
+  <div class="g-campo" id="g-campo" style="font-size:13px;opacity:.85;margin-bottom:6px">📍 Polideportivo Municipal de Santa Ponça Don Antonio Lechuga · Calvià, Santa Ponsa</div>
   <div class="g-sub">Acceso restringido · Temporada 2026/2027</div>
+  <div style="max-width:340px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px 13px;font-size:12px;line-height:1.55;text-align:left;margin-bottom:14px">
+    <b>¿Para qué es este cuestionario?</b><br>
+    Recoge, de forma confidencial, tu experiencia como árbitro en este campo, ambiente en las gradas, instalaciones, comportamiento de entrenadores, jugadores y capitanes, y cómo te has sentido durante el partido.<br>
+    Las respuestas sirven para detectar situaciones de riesgo y diseñar, con el club y familias, actuaciones que mejoren el respeto hacia el árbitro y equipos.<br>
+    <span style="opacity:.8">⏱️ Unos 3 minutos.</span>
+  </div>
   <div id="g-demo" style="display:none;background:#FEF3C7;color:#92400E;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;margin-bottom:14px">🧪 Versión de revisión · las respuestas no se guardan</div>
   <div class="g-card">
     <label for="g-pw">Contraseña de acceso</label>
@@ -92,11 +98,24 @@ body.locked > *:not(#pw-gate){display:none!important}
 // Parámetros del enlace: ?club=…&campo=…&demo=1
 const _PQ = new URLSearchParams(location.search);
 const CLUB  = (_PQ.get('club')  || 'RCD Santa Ponça').trim();
-const CAMPO = (_PQ.get('campo') || 'Polideportivo Municipal de Santa Ponça').trim();
+const CAMPO = (_PQ.get('campo') || 'Polideportivo Municipal de Santa Ponça Don Antonio Lechuga').trim();
+const LOCALIDAD = (_PQ.get('localidad') || 'Calvià, Santa Ponsa').trim();
 const DEMO  = _PQ.get('demo') === '1';
 document.getElementById('g-club').textContent  = CLUB;
-document.getElementById('g-campo').textContent = '📍 ' + CAMPO;
+document.getElementById('g-campo').textContent = '📍 ' + CAMPO + ' · ' + LOCALIDAD;
 if (DEMO) document.getElementById('g-demo').style.display = 'block';
+// Contador de visitas anónimo (solo lo ve Nefta en la app)
+(function(){
+  try {
+    if (sessionStorage.getItem('rcd_visita_arbitros')) return;
+    sessionStorage.setItem('rcd_visita_arbitros','1');
+    let id = localStorage.getItem('rcd_vid');
+    if (!id) { id = 'v_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); localStorage.setItem('rcd_vid', id); }
+    fetch('https://script.google.com/macros/s/AKfycbyqhbmjguV1-B9WG_mUic-L_VSzucZnvBLn8CdQlnWCzb4_1C-yEt4ltpAk3e7t1Hm1aQ/exec', {
+      method:'POST', mode:'no-cors', keepalive:true, headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({ ficha:'VISITA', pagina:'arbitros', demo: DEMO, id: id }) }).catch(function(){});
+  } catch(e) {}
+})();
 const GATE_HASH='1aa420b2d17475a324e6bbe198366e7907fd8cdca68304c07f1495a46ea0a5b2';
 function gateOpen(){document.body.classList.remove('locked');var g=document.getElementById('pw-gate');if(g)g.remove();}
 async function gateHash(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
@@ -193,7 +212,7 @@ try{if(sessionStorage.getItem('ffib_ok')==='1')gateOpen();}catch(e){}
       <div class="pill pr" onclick="p(this,'gradas')">🚨 Muy conflictivo</div>
     </div>
 
-    <div class="q">3. ¿Hubo insultos o comentarios inapropiados desde las gradas dirigidos hacia ti?</div>
+    <div class="q">3. ¿Hubo insultos o comentarios inapropiados desde las gradas dirigidos hacia ti o tus asistentes?</div>
     <div class="pills">
       <div class="pill pv" onclick="p(this,'amb-ins-arb')">✅ No</div>
       <div class="pill pa" onclick="p(this,'amb-ins-arb')">⚠️ Alguno puntual</div>
@@ -563,7 +582,8 @@ const CAMPOS_TEXTO = ['d-fecha','d-hora','d-campo','d-municipio','d-cat','d-tipo
   'amb-incid-txt','ent-obs','jug-antidep-txt','cap-obs','riesgo-txt','pos-txt','mejora-txt','coment-txt'];
 
 document.addEventListener('DOMContentLoaded', () => {
-  const hc = document.getElementById('h-club'); if (hc) hc.textContent = CLUB + ' · 📍 ' + CAMPO + (DEMO ? ' · 🧪 Versión de revisión' : '');
+  const hc = document.getElementById('h-club'); if (hc) hc.textContent = CLUB + ' · 📍 ' + CAMPO + ' · ' + LOCALIDAD + (DEMO ? ' · 🧪 Versión de revisión' : '');
+  const mun = document.getElementById('d-municipio'); if (mun && !mun.value) mun.value = LOCALIDAD;
   const loc = document.getElementById('d-local'); if (loc && !loc.value) loc.value = CLUB;
   const cam = document.getElementById('d-campo'); if (cam && !cam.value) cam.value = CAMPO;
   if (DEMO) { try { localStorage.removeItem('ffib_pendiente_v1'); } catch(e) {} }

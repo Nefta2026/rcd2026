@@ -178,6 +178,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </nav>
   <div class="eq-main">
 
+    <!-- VISITAS — solo visible para Nefta -->
+    <div id="panel-visitas" style="display:none;margin-bottom:16px"></div>
+
     <!-- CASOS GRAVES — solo visible para Nefta -->
     <div id="alerta-casos-graves" style="display:none;margin-bottom:16px">
       <div style="background:#FFF1F2;border:2px solid #FECACA;border-radius:10px;overflow:hidden">
@@ -1019,7 +1022,7 @@ async function verificarPW() {
     if (isNefta) { try { _clNefta = document.getElementById('pw-input').value; sessionStorage.setItem('nefta_clave', _clNefta); } catch(e) {} }
     document.getElementById('pantalla-inicio').style.display = 'none';
     document.getElementById('pantalla-equipos').style.display = 'block';
-    if (isNefta) mostrarAlertaCasosGraves();
+    if (isNefta) { mostrarAlertaCasosGraves(); marcarNeftaVisitas(); cargarVisitas(); }
   } else {
     document.getElementById('pw-err').style.display = 'block';
     document.getElementById('pw-input').value = '';
@@ -2254,6 +2257,59 @@ function pintarIncidencias(data) {
     }).join('') + '</div>';
   });
 }
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CONTADOR DE VISITAS (anónimo · solo Nefta ve los números)
+// ══════════════════════════════════════════════════════════════════════════════
+function idVisitante() {
+  try {
+    let id = localStorage.getItem('rcd_vid');
+    if (!id) { id = 'v_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); localStorage.setItem('rcd_vid', id); }
+    return id;
+  } catch(e) { return ''; }
+}
+function enviarVisita(pagina, demo) {
+  try {
+    const k = 'rcd_visita_' + pagina;
+    if (sessionStorage.getItem(k)) return;       // una visita por sesión
+    sessionStorage.setItem(k, '1');
+  } catch(e) {}
+  fetch(GAS, { method:'POST', mode:'no-cors', keepalive:true, headers:{'Content-Type':'text/plain'},
+    body: JSON.stringify({ ficha:'VISITA', pagina: pagina, demo: !!demo, id: idVisitante() }) }).catch(()=>{});
+}
+function marcarNeftaVisitas() {
+  fetch(GAS, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+    body: JSON.stringify({ ficha:'VISITA_NEFTA', id: idVisitante() }) }).catch(()=>{});
+}
+async function cargarVisitas() {
+  const box = document.getElementById('panel-visitas');
+  if (!box || !isNefta || !_clNefta) return;
+  box.style.display = 'block';
+  box.innerHTML = '<div style="font-size:12px;color:#6B7280">👁️ Cargando visitas…</div>';
+  try {
+    const res = await fetch(GAS + '?accion=visitas&clave=' + encodeURIComponent(_clNefta));
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error);
+    const P = d.paginas || {};
+    const fila = (nombre, o) => `<tr><td style="padding:6px 8px;font-weight:700">${nombre}</td>
+      <td style="padding:6px 8px;text-align:center">${o.hoy||0}</td><td style="padding:6px 8px;text-align:center">${o.semana||0}</td>
+      <td style="padding:6px 8px;text-align:center">${o.total||0}</td><td style="padding:6px 8px;text-align:center;font-weight:800">${o.personas||0}</td></tr>`;
+    box.innerHTML = `<div style="border:1px solid #E5E7EB;border-radius:10px;overflow:hidden;background:#fff">
+      <div style="background:#1C2B4A;color:#fff;padding:9px 14px;font-weight:800;font-size:13px;display:flex;justify-content:space-between;align-items:center">
+        <span>👁️ Visitas · solo Nefta</span>
+        <button onclick="cargarVisitas()" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer">🔄</button></div>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:#F3F4F6;color:#374151"><th style="padding:6px 8px;text-align:left">Página</th><th>Hoy</th><th>7 días</th><th>Total</th><th>Personas</th></tr></thead>
+        <tbody>${fila('📋 App entrenadores', P['App entrenadores']||{})}${fila('🟨 Árbitros', P['Árbitros']||{})}${fila('🧪 Árbitros (revisión)', P['Árbitros (revisión)']||{})}</tbody>
+      </table></div>
+      <div style="padding:6px 14px 9px;font-size:10px;color:#9CA3AF">Visitas = entradas (una por sesión). Personas = dispositivos distintos. No se cuentan tus propias visitas.</div>
+    </div>`;
+  } catch(e) {
+    box.innerHTML = '<div style="font-size:12px;color:#9CA3AF">👁️ No se pudieron cargar las visitas.</div>';
+  }
+}
+enviarVisita('app', false);
 
 // ── Stats partido — acceso con contraseña ────────────────────────────────────
 const STATS_PW_H = '828a1fe8e04750edbdc707b38c49fbe2c6a712c696ce40ed69ca7b8cc13eda2b';
