@@ -1029,7 +1029,7 @@ async function verificarPW() {
     if (isNefta) { try { _clNefta = document.getElementById('pw-input').value; sessionStorage.setItem('nefta_clave', _clNefta); } catch(e) {} }
     document.getElementById('pantalla-inicio').style.display = 'none';
     document.getElementById('pantalla-equipos').style.display = 'block';
-    if (isNefta) { mostrarAlertaCasosGraves(); marcarNeftaVisitas(); setTimeout(cargarVisitas, 1200); }
+    if (isNefta) { cargarEstadosCasos().then(mostrarAlertaCasosGraves); marcarNeftaVisitas(); setTimeout(cargarVisitas, 1200); }
   } else {
     document.getElementById('pw-err').style.display = 'block';
     document.getElementById('pw-input').value = '';
@@ -2428,6 +2428,68 @@ function borrarBorrador(tipo) {
 }, true));
 window.addEventListener('pagehide', () => { if (equipoActual) guardarBorrador(); });
 
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CASOS GRAVES · estado Resuelta / No resuelta (se guarda en el script, solo Nefta)
+// Al marcar «Resuelta», el caso deja de aparecer como activo en todos los dispositivos.
+// ══════════════════════════════════════════════════════════════════════════════
+let _CASOS_TODOS = null;   // copia de todos los casos (se crea al cargar estados)
+let _casosEstado = {};
+function idCaso(r) { return [r.fecha, r.equipoId || r.categoria, r.jugador, r.tipo_conflicto || r.tipo].join('|'); }
+
+function aplicarEstadosCasos() {
+  if (!_CASOS_TODOS) _CASOS_TODOS = REGISTROS_ESPECIALES.slice();
+  const activos = _CASOS_TODOS.filter(r => ((_casosEstado[idCaso(r)] || {}).estado) !== 'Resuelta');
+  REGISTROS_ESPECIALES.length = 0;
+  activos.forEach(r => REGISTROS_ESPECIALES.push(r));
+}
+
+async function cargarEstadosCasos() {
+  if (!_clNefta) return;
+  try {
+    const res = await fetch(GAS + '?accion=casos&clave=' + encodeURIComponent(_clNefta) + '&t=' + Date.now(), { cache: 'no-store' });
+    const d = await res.json();
+    if (d && d.ok) _casosEstado = d.estados || {};
+  } catch(e) { console.log('Estados de casos:', e.message); }
+  aplicarEstadosCasos();
+}
+
+function htmlEstadoCaso(r) {
+  if (!isNefta) return '';
+  const id = idCaso(r), est = (_casosEstado[id] || {}).estado || '';
+  const idJs = id.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  return `<div style="margin-top:10px;border-top:1px solid #FECACA;padding-top:10px">
+    <div style="font-size:10px;font-weight:800;color:#374151;margin-bottom:6px">ESTADO DEL CASO${est === 'No resuelta' ? ' · <span style="color:#991B1B">❌ No resuelta</span>' : ''}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="event.stopPropagation(); marcarCaso('${idJs}','Resuelta')" style="flex:1;min-width:120px;background:#065F46;color:#fff;border:none;border-radius:7px;padding:9px;font-weight:800;font-size:12px;cursor:pointer">✅ Resuelta</button>
+      <button onclick="event.stopPropagation(); marcarCaso('${idJs}','No resuelta')" style="flex:1;min-width:120px;background:${est === 'No resuelta' ? '#991B1B' : '#fff'};color:${est === 'No resuelta' ? '#fff' : '#991B1B'};border:2px solid #991B1B;border-radius:7px;padding:9px;font-weight:800;font-size:12px;cursor:pointer">❌ No resuelta</button>
+    </div>
+  </div>`;
+}
+
+async function marcarCaso(id, estado) {
+  if (estado === 'Resuelta' && !confirm('¿Marcar este caso como RESUELTO? Dejará de aparecer en Casos graves activos.')) return;
+  _casosEstado[id] = { estado: estado, fecha: new Date().toISOString().slice(0, 10) };
+  try {
+    const res = await fetch(GAS, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ ficha: 'CASO_ESTADO', id: id, estado: estado, clave: _clNefta }) });
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error || 'Error');
+    toast(estado === 'Resuelta' ? '✅ Caso marcado como resuelto' : '❌ Caso marcado como no resuelto');
+  } catch(e) {
+    toast('⚠️ No se pudo guardar el estado del caso. Inténtalo de nuevo.', true);
+    delete _casosEstado[id];
+    return;
+  }
+  aplicarEstadosCasos();
+  const div = document.getElementById('alerta-casos-graves');
+  if (!REGISTROS_ESPECIALES.length) { if (div) div.style.display = 'none'; }
+  else mostrarAlertaCasosGraves();
+  if (equipoActual) { try { poblarCasosGraves(); } catch(e) {} }
+  if (!REGISTROS_ESPECIALES.length) { const l = document.getElementById('casos-graves-lista'); if (l) l.innerHTML = '<p style="font-size:12px;color:#6B7280">No hay casos graves activos.</p>'; }
+  if (equipoActual) { try { mostrarCasosGravesEnStats(equipoActual.id); } catch(e) {} }
+}
+
 // ── Stats partido — acceso con contraseña ────────────────────────────────────
 const STATS_PW_H = '034cbb657c3ece7581cc34cab50278ec54380a974c1985ab9bd29cf5e83e5257';
 
@@ -3240,6 +3302,7 @@ function mostrarAlertaCasosGraves() {
             <span style="background:#F9FAFB;color:#6B7280;border-radius:4px;padding:2px 8px;font-size:10px">📅 ${r.fecha||'—'}</span>
           </div>
           ${generarIntervencion(r)}
+          ${htmlEstadoCaso(r)}
         </div>
       </div>`;
   }).join('');
