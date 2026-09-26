@@ -584,7 +584,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div class="sep">Participación</div>
         <div style="overflow-x:auto"><table class="jt">
-          <thead><tr><th style="text-align:left;padding-left:7px">Jugador</th><th style="text-align:center">Titular</th><th>Actuación</th></tr></thead>
+          <thead><tr><th style="text-align:left;padding-left:7px">Jugador</th><th style="text-align:center">Titular</th><th style="text-align:center">Cuartos</th><th style="text-align:center">Min.</th><th>Actuación</th></tr></thead>
           <tbody id="tb-alineacion"></tbody>
         </table></div>
         <div class="field" style="margin-top:10px"><label>Observaciones</label><textarea id="al-obs" placeholder="Valoración general, aspectos tácticos..."></textarea></div>
@@ -803,12 +803,32 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <thead><tr>
             <th style="text-align:left;padding-left:7px">Jugador</th>
             <th>Rol</th>
+            <th title="Partidos jugados">PJ</th>
+            <th>Cuartos</th>
+            <th>Min.</th>
             <th>Actuación</th>
             <th>Tarjetas</th>
             <th>Conflictos</th>
           </tr></thead>
           <tbody id="tb-stats-partido"></tbody>
         </table></div>
+
+        <div class="solo-nefta">
+          <div class="sep" style="margin-top:12px">Gráficos del partido</div>
+          <button class="btn btn-n" onclick="generarGraficosPartido(true)" style="margin-bottom:10px">📊 Generar gráficos</button>
+          <div id="graficos-partido" style="display:none">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px">
+              <div class="card" style="padding:10px"><canvas id="gp-titulares" height="220"></canvas></div>
+              <div class="card" style="padding:10px"><canvas id="gp-estado" height="220"></canvas></div>
+            </div>
+            <div class="card" style="padding:10px;margin-top:14px"><canvas id="gp-actuacion" height="280"></canvas></div>
+            <div class="card" style="padding:10px;margin-top:14px"><canvas id="gp-minutos" height="300"></canvas></div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:14px">
+              <div class="card" style="padding:10px"><canvas id="gp-tipos" height="220"></canvas></div>
+              <div class="card" style="padding:10px"><canvas id="gp-jugadores" height="220"></canvas></div>
+            </div>
+          </div>
+        </div>
 
         <div class="sep" style="margin-top:12px">Valoración grupal del partido</div>
         <div class="field"><label>Valoración general del partido</label>
@@ -852,7 +872,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 // ── Acumulador de registros semanales ────────────────────────────────────────
 const _registrosSemana = {
   asistencia: {}, valoracion: {}, conflictos: {},
-  alineacion: {}, tarjetas: {}, quejas: [], padres: [], conflictoP: {}, detalles: {},
+  alineacion: {}, tarjetas: {}, quejas: [], padres: [], conflictoP: {}, detalles: {}, juego: {},
 };
 
 // ── LOPD ─────────────────────────────────────────────────────────────────────
@@ -1125,6 +1145,7 @@ function abrirEquipoConfirmado(key) {
   _registrosSemana.padres     = [];
   _registrosSemana.conflictoP = {};
   _registrosSemana.detalles   = {};
+  _registrosSemana.juego      = {};
   window._incidData = null;
   cargarDatosExcel(equipoActual.id);
   document.getElementById('app-equipo-nombre').innerHTML = '<span class="escudo-mini"></span>' + equipoActual.nombre.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
@@ -1272,6 +1293,9 @@ function buildTablas() {
   jugs.forEach((j,i) => {
     html += `<tr><td class="jn">${i+1}. ${j}</td>
       <td style="text-align:center"><input type="checkbox" id="al-t-${i}"></td>
+      <td style="text-align:center"><select id="al-cu-${i}" style="width:58px;font-size:12px;padding:5px 4px;border:1px solid var(--borde);border-radius:6px">
+        <option value="">—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td>
+      <td style="text-align:center"><input type="number" id="al-m-${i}" min="0" max="120" inputmode="numeric" placeholder="—" style="width:56px;font-size:12px;padding:5px 4px;border:1px solid var(--borde);border-radius:6px;text-align:center"></td>
       <td><select id="al-ac-${i}" style="width:120px;font-size:12px;padding:5px 6px;border:1px solid var(--borde);border-radius:6px">
         <option value="">— Actuación —</option>
         <option>⭐⭐⭐ Excelente</option>
@@ -1289,6 +1313,9 @@ function buildTablas() {
     html += '<tr>' +
       '<td class="jn">'+j+'</td>' +
       '<td id="ssp-rol-'+i+'" style="text-align:center;color:var(--text3)">—</td>' +
+      '<td id="ssp-pj-'+i+'" style="text-align:center;color:var(--text3)">—</td>' +
+      '<td id="ssp-cu-'+i+'" style="text-align:center;color:var(--text3)">—</td>' +
+      '<td id="ssp-min-'+i+'" style="text-align:center;color:var(--text3)">—</td>' +
       '<td id="ssp-act-'+i+'" style="text-align:center;color:var(--text3)">—</td>' +
       '<td id="ssp-tar-'+i+'" style="text-align:center;color:var(--text3)">—</td>' +
       '<td id="ssp-conf-'+i+'" style="text-align:center;color:var(--text3)">—</td>' +
@@ -1569,6 +1596,8 @@ async function guardar(tipo) {
           _registrosSemana.alineacion[jug] = {
             titular: tit ? 'Sí' : 'No', actuacion: act2
           };
+          sumarJuego(jug, document.getElementById('al-fecha')?.value || '', document.getElementById(`al-cu-${i}`)?.value || '',
+                     document.getElementById(`al-m-${i}`)?.value || '', tit ? 'Sí' : 'No');
         }
       });
       actualizarStatsAuto();
@@ -1590,10 +1619,10 @@ async function guardar(tipo) {
     }
     else if (tipo === 'alineacion') {
       const ficha = `${eq}_Alineacion`;
-      const h = ['Fecha','Rival','Campo','Resultado','Equipo','Jugador','Titular','Minutos','Goles','Asistencias','Actuacion','Timestamp'];
+      const h = ['Fecha','Rival','Campo','Resultado','Equipo','Jugador','Titular','Cuartos','Minutos','Goles','Asistencias','Actuacion','Timestamp'];
       for (let i=0;i<J.length;i++) {
         const tit = document.getElementById(`al-t-${i}`)?.checked ? 'Sí' : 'No';
-        await gasPost(ficha, h, [v('al-fecha'),v('al-rival'),v('al-campo'),v('al-resultado'),eq,J[i],tit,v(`al-m-${i}`),v(`al-g-${i}`),v(`al-a-${i}`),v(`al-ac-${i}`),ts()]);
+        await gasPost(ficha, h, [v('al-fecha'),v('al-rival'),v('al-campo'),v('al-resultado'),eq,J[i],tit,v(`al-cu-${i}`),v(`al-m-${i}`),v(`al-g-${i}`),v(`al-a-${i}`),v(`al-ac-${i}`),ts()]);
       }
     }
     else if (tipo === 'conflicto-p') {
@@ -2234,16 +2263,27 @@ function pintarIncidencias(data) {
 
   document.querySelectorAll('.incid-box').forEach(box => {
     const tipos = modos[box.dataset.modo] || [];
-    const lista = [];
-    tipos.forEach(t => (data[t]||[]).forEach(r => lista.push({t, r})));
-    lista.sort((a,b) => String(b.r.Fecha||b.r.Timestamp||'').localeCompare(String(a.r.Fecha||a.r.Timestamp||'')));
+    const todas = [];
+    tipos.forEach(t => (data[t]||[]).forEach(r => {
+      const rn = Object.assign({}, r, { Jugador: nombreEnPlantilla(r['Jugador'] || r['Jugador relacionado'] || '') });
+      const id = idIncidencia(t, rn);
+      if (!_incidRegistro[id]) _incidRegistro[id] = { ficha: t, r: rn, jug: rn.Jugador || 'General' };
+      todas.push({ t, r, id, dec: (_incidEstado[id] || {}).estado || '' });
+    }));
+    todas.sort((a,b) => String(b.r.Fecha||b.r.Timestamp||'').localeCompare(String(a.r.Fecha||a.r.Timestamp||'')));
+    const lista = todas.filter(x => !x.dec), cerradas = todas.filter(x => x.dec);
+    const htmlCerradas = cerradas.length
+      ? '<div style="font-weight:800;font-size:12px;margin:10px 0 4px;color:#374151">Incidencias cerradas:</div>' +
+        cerradas.map(x => `<div style="font-size:11px;margin-bottom:3px"><b>${escI(x.r['Jugador'] || x.r['Jugador relacionado'] || 'General')}</b> · ${titulo[x.t]}: ${escI(x.r['Tipo'] || x.r['Tipo conducta'] || '')} (${escI(String(x.r['Fecha']||'').slice(0,10))}) &nbsp;${chipDecision(x.dec)}</div>`).join('')
+      : '';
 
-    const cab = `<div style="background:#1C2B4A;color:#fff;padding:8px 12px;border-radius:8px 8px 0 0;font-weight:800;font-size:13px">🧭 Incidencias y pautas para el entrenador · solo Nefta (${lista.length})</div>`;
+    const cab = `<div style="background:#1C2B4A;color:#fff;padding:8px 12px;border-radius:8px 8px 0 0;font-weight:800;font-size:13px">🧭 Incidencias y pautas para el entrenador · solo Nefta (${lista.length} pendientes)</div>`;
     if (!lista.length) {
-      box.innerHTML = cab + '<div style="border:1px solid #E5E7EB;border-top:none;border-radius:0 0 8px 8px;padding:12px;font-size:12px;color:#6B7280">No hay incidencias registradas en este equipo.</div>';
+      box.innerHTML = cab + '<div style="border:1px solid #E5E7EB;border-top:none;border-radius:0 0 8px 8px;padding:12px;font-size:12px;color:#6B7280">' +
+        (cerradas.length ? '✅ No hay incidencias pendientes.' : 'No hay incidencias registradas en este equipo.') + htmlCerradas + '</div>';
       return;
     }
-    box.innerHTML = cab + '<div style="border:1px solid #E5E7EB;border-top:none;border-radius:0 0 8px 8px;padding:10px">' + lista.map(({t, r}, i) => {
+    box.innerHTML = cab + '<div style="border:1px solid #E5E7EB;border-top:none;border-radius:0 0 8px 8px;padding:10px">' + lista.map(({t, r, id}, i) => {
       const jug  = r['Jugador'] || r['Jugador relacionado'] || 'General';
       const grav = r['Gravedad'] ? `<span style="background:#FEE2E2;color:#991B1B;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700">G${escI(r['Gravedad'])}</span>` : '';
       const est  = r['Seguimiento'] || r['Resolucion'] || '';
@@ -2275,9 +2315,10 @@ function pintarIncidencias(data) {
             ${htmlPautaOperativa(PO, false)}
             <button data-copia="${escI(textoCopia)}" onclick="navigator.clipboard.writeText(this.dataset.copia).then(()=>toast('✅ Pautas copiadas'))" style="margin-top:6px;background:#065F46;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer">📋 Copiar pautas para enviar</button>
           </div>
+          ${botonesIncidencia({ id: id })}
         </div>
       </details>`;
-    }).join('') + '</div>';
+    }).join('') + htmlCerradas + '</div>';
   });
 }
 
@@ -2490,6 +2531,81 @@ async function marcarCaso(id, estado) {
   if (equipoActual) { try { mostrarCasosGravesEnStats(equipoActual.id); } catch(e) {} }
 }
 
+
+// ══════════════════════════════════════════════════════════════════════════════
+// GRÁFICOS DE PARTIDO (solo Nefta)
+// ══════════════════════════════════════════════════════════════════════════════
+const _chartsPartido = {};
+function nuevoGrafico(id, cfg) {
+  const el = document.getElementById(id); if (!el || typeof Chart === 'undefined') return;
+  if (_chartsPartido[id]) { try { _chartsPartido[id].destroy(); } catch(e) {} }
+  _chartsPartido[id] = new Chart(el.getContext('2d'), cfg);
+}
+function generarGraficosPartido(aviso) {
+  if (!isNefta) return;
+  if (typeof Chart === 'undefined') { if (aviso) toast('⚠️ Cargando librería de gráficos, vuelve a pulsar en unos segundos', true); return; }
+  const cont = document.getElementById('graficos-partido'); if (!cont) return;
+  cont.style.display = 'block';
+  const J = jugs(), RS = _registrosSemana;
+  const VERDE = '#065F46', NAR = '#C2410C', ROJO = '#991B1B', AZUL = '#1d4ed8', AMB = '#B45309', GRIS = '#9CA3AF';
+  const titulo = t => ({ display: true, text: t, font: { size: 13, weight: 'bold' }, color: '#1C2B4A' });
+
+  // 1. Titulares / suplentes / sin registro
+  let tit = 0, sup = 0, sin = 0;
+  J.forEach(j => { const a = RS.alineacion[j]; if (!a || !a.titular) sin++; else if (/s[ií]/i.test(a.titular)) tit++; else sup++; });
+  nuevoGrafico('gp-titulares', { type: 'doughnut',
+    data: { labels: ['Titulares', 'Suplentes', 'Sin registro'], datasets: [{ data: [tit, sup, sin], backgroundColor: [VERDE, NAR, '#E5E7EB'] }] },
+    options: { plugins: { title: titulo('Participación en el partido'), legend: { position: 'bottom' } } } });
+
+  // 2. Estado de las incidencias del equipo (entreno + partido)
+  let pend = 0, res = 0, nores = 0;
+  J.forEach(j => detallesJugador(j).forEach(d => { if (d.decision === 'Resuelta') res++; else if (d.decision === 'No resuelta') nores++; else pend++; }));
+  nuevoGrafico('gp-estado', { type: 'doughnut',
+    data: { labels: ['Pendientes', 'Resueltas', 'No resueltas'], datasets: [{ data: [pend, res, nores], backgroundColor: [AMB, VERDE, ROJO] }] },
+    options: { plugins: { title: titulo('Estado de las incidencias'), legend: { position: 'bottom' } } } });
+
+  // 3. Actuación por jugador
+  const puntos = t => { t = String(t || ''); return /excelente/i.test(t) ? 4 : /muy buena/i.test(t) ? 3 : /buena/i.test(t) ? 2 : /mejorable/i.test(t) ? 1 : null; };
+  const conAct = J.filter(j => puntos((RS.alineacion[j] || {}).actuacion) !== null);
+  nuevoGrafico('gp-actuacion', { type: 'bar',
+    data: { labels: conAct, datasets: [{ label: 'Actuación', data: conAct.map(j => puntos(RS.alineacion[j].actuacion)),
+      backgroundColor: conAct.map(j => { const v = puntos(RS.alineacion[j].actuacion); return v >= 4 ? VERDE : v >= 3 ? '#059669' : v >= 2 ? AMB : ROJO; }) }] },
+    options: { indexAxis: 'y', plugins: { title: titulo('Actuación por jugador'), legend: { display: false } },
+      scales: { x: { min: 0, max: 4, ticks: { stepSize: 1, callback: v => ['', 'Mejorable', 'Buena', 'Muy buena', 'Excelente'][v] || '' } } } } });
+
+  // 3b. Partidos, cuartos y minutos jugados por jugador
+  const conJ = J.filter(j => resumenJuego(j).convocado);
+  nuevoGrafico('gp-minutos', { type: 'bar',
+    data: { labels: conJ.length ? conJ : ['Sin datos de participación'], datasets: [
+      { label: 'Minutos', data: conJ.map(j => resumenJuego(j).minutos), backgroundColor: VERDE, xAxisID: 'x' },
+      { label: 'Cuartos', data: conJ.map(j => resumenJuego(j).cuartos), backgroundColor: AZUL, xAxisID: 'x2' },
+      { label: 'Partidos jugados', data: conJ.map(j => resumenJuego(j).pj), backgroundColor: AMB, xAxisID: 'x2' }] },
+    options: { indexAxis: 'y', plugins: { title: titulo('Participación: partidos, cuartos y minutos'), legend: { position: 'bottom' } },
+      scales: { x: { position: 'bottom', beginAtZero: true, title: { display: true, text: 'Minutos' } },
+                x2: { position: 'top', beginAtZero: true, grid: { drawOnChartArea: false }, ticks: { stepSize: 1 }, title: { display: true, text: 'Partidos / cuartos' } } } } });
+
+  // 4. Incidencias de partido por tipo
+  let conf = 0, am = 0, ro = 0, que = 0;
+  J.forEach(j => { conf += RS.conflictoP[j] || 0; (RS.tarjetas[j] || []).forEach(t => /roja/i.test(t) ? ro++ : am++);
+    que += detallesJugador(j).filter(d => d.ficha === 'Quejas').length; });
+  const fam = ((window._incidData || {}).ConductaFamilias || []).length;
+  nuevoGrafico('gp-tipos', { type: 'doughnut',
+    data: { labels: ['Conflictos', 'Amarillas', 'Rojas', 'Quejas', 'Familias'], datasets: [{ data: [conf, am, ro, que, fam], backgroundColor: [NAR, '#EAB308', ROJO, AZUL, '#7C3AED'] }] },
+    options: { plugins: { title: titulo('Incidencias de partido por tipo'), legend: { position: 'bottom' } } } });
+
+  // 5. Incidencias por jugador (solo quien tiene alguna)
+  const conInc = J.filter(j => (RS.conflictoP[j] || 0) + (RS.tarjetas[j] || []).length + detallesJugador(j).filter(d => d.ficha === 'Quejas').length > 0);
+  nuevoGrafico('gp-jugadores', { type: 'bar',
+    data: { labels: conInc.length ? conInc : ['Sin incidencias'], datasets: [
+      { label: 'Conflictos', data: conInc.map(j => RS.conflictoP[j] || 0), backgroundColor: NAR },
+      { label: 'Tarjetas', data: conInc.map(j => (RS.tarjetas[j] || []).length), backgroundColor: '#EAB308' },
+      { label: 'Quejas', data: conInc.map(j => detallesJugador(j).filter(d => d.ficha === 'Quejas').length), backgroundColor: AZUL }] },
+    options: { plugins: { title: titulo('Incidencias de partido por jugador'), legend: { position: 'bottom' } },
+      scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } } } } });
+
+  if (aviso) toast('✅ Gráficos del partido generados');
+}
+
 // ── Stats partido — acceso con contraseña ────────────────────────────────────
 const STATS_PW_H = '034cbb657c3ece7581cc34cab50278ec54380a974c1985ab9bd29cf5e83e5257';
 
@@ -2520,6 +2636,25 @@ function cerrarStats() {
 
 // ── Auto-stats partido ───────────────────────────────────────────────────────
 // ── Auto-stats partido — usa datos acumulados ────────────────────────────────
+// ── Participación: partidos, cuartos y minutos jugados ───────────────────────
+// Un partido cuenta como jugado si hay cuartos o minutos > 0 (o, sin esos datos, si fue titular).
+function sumarJuego(jug, fecha, cuartos, minutos, titular) {
+  if (!jug) return;
+  const RS = _registrosSemana; if (!RS.juego) RS.juego = {};
+  const cu = parseInt(cuartos, 10), mi = parseInt(minutos, 10);
+  const hayDato = !isNaN(cu) || !isNaN(mi);
+  const jugado = (cu > 0) || (mi > 0) || (!hayDato && /s[ií]/i.test(String(titular || '')));
+  if (!RS.juego[jug]) RS.juego[jug] = {};
+  const k = fecha || ('sin-fecha-' + Object.keys(RS.juego[jug]).length);
+  RS.juego[jug][k] = { jugado: jugado, cuartos: isNaN(cu) ? 0 : cu, minutos: isNaN(mi) ? 0 : mi };   // mismo partido: se sobrescribe
+}
+function resumenJuego(jug) {
+  const p = (_registrosSemana.juego || {})[jug] || {};
+  const v = Object.values(p);
+  return { pj: v.filter(x => x.jugado).length, convocado: v.length,
+           cuartos: v.reduce((s, x) => s + x.cuartos, 0), minutos: v.reduce((s, x) => s + x.minutos, 0) };
+}
+
 function calcularStatsPartido() {
   const J = jugs();
   J.forEach((j, i) => {
@@ -2541,6 +2676,10 @@ function calcularStatsPartido() {
       if(el){el.textContent=val;el.style.color=color||'#9CA3AF';el.style.fontWeight=val!=='—'?'700':'400';}
     };
     set('rol',  rol,   rolC);
+    const rj = resumenJuego(j);
+    set('pj',  rj.convocado ? String(rj.pj) : '—', rj.pj ? '#065F46' : '#9CA3AF');
+    set('cu',  rj.cuartos ? String(rj.cuartos) : '—', '#1C2B4A');
+    set('min', rj.minutos ? String(rj.minutos) + "'" : '—', '#1C2B4A');
     set('act',  (act==='— Actuación —'||!act)?'—':act, actC);
     set('tar',  tar,   tar!=='—'?'#B45309':'#9CA3AF');
     set('conf', cfStr, conf>0?'#991B1B':'#9CA3AF');
@@ -2569,6 +2708,7 @@ function detallesJugador(jug) {
       const PO = pautaOperativa(det.ficha, r);
       const pautas = [PO.objetivo];
       const id = idIncidencia(det.ficha, det.r);
+      _incidRegistro[id] = { ficha: det.ficha, r: det.r, jug: jug };
       return {
         id: id, ficha: det.ficha, titulo: TITULO_FICHA[det.ficha] || det.ficha,
         fecha: fechaCorta(r.Fecha), tipo: String(r.Tipo || r.Motivo || '—'),
@@ -2630,15 +2770,13 @@ function actualizarRecomendacion() {
 
 // ── Estado de incidencias (Resuelta / No resuelta) · solo Nefta ──────────────
 let _incidEstado = {};
+const _incidRegistro = {};   // id → { ficha, r, jug } para poder marcar desde cualquier sitio
 function idIncidencia(ficha, r) {
   return [ficha, String(r.Timestamp || ''), String(r.Fecha || '').slice(0,10), normNombre(r.Jugador || ''), String(r.Tipo || '')].join('|');
 }
 async function marcarIncidencia(id, estado) {
-  let det = null, jug = '';
-  Object.keys(_registrosSemana.detalles || {}).forEach(j => (_registrosSemana.detalles[j] || []).forEach(x => {
-    if (!det && idIncidencia(x.ficha, x.r) === id) { det = x; jug = j; }
-  }));
-  if (!det) return;
+  const reg = _incidRegistro[id]; if (!reg) return;
+  const det = { ficha: reg.ficha, r: reg.r }, jug = reg.jug || reg.r.Jugador || 'General';
   if (!confirm('¿Marcar esta incidencia de ' + jug + ' como ' + estado.toUpperCase() + '? Dejará de aparecer en las pautas pendientes.')) return;
   try {
     const res = await fetch(GAS, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -2654,6 +2792,9 @@ async function marcarIncidencia(id, estado) {
   }
   actualizarRecomendacion();
   if (isNefta) mostrarStatsIndividuales();
+  if (window._incidData) pintarIncidencias(window._incidData);
+  const gp = document.getElementById('graficos-partido');
+  if (gp && gp.style.display === 'block') { try { generarGraficosPartido(false); } catch(e) {} }
 }
 
 function actualizarStatsAuto() {
@@ -2661,6 +2802,8 @@ function actualizarStatsAuto() {
   calcularStatsPartido();
   if (isNefta) mostrarStatsIndividuales();
   actualizarRecomendacion();
+  const gp = document.getElementById('graficos-partido');
+  if (isNefta && gp && gp.style.display === 'block') { try { generarGraficosPartido(false); } catch(e) {} }
 }
 
 // ── Datos precargados desde Excel (24/09/2026) ────────────────────────────────
@@ -2754,7 +2897,8 @@ async function cargarDesdeSheets(equipoId, silencioso) {
     });
     (data.Alineacion || []).filter(nuevo).forEach(reg => {
       if (!reg.Jugador) return;
-      RS.alineacion[String(reg.Jugador)] = { titular: String(reg.Titular||''), actuacion: String(reg.Actuacion||'') }; n++;
+      RS.alineacion[String(reg.Jugador)] = { titular: String(reg.Titular||''), actuacion: String(reg.Actuacion||'') };
+      sumarJuego(String(reg.Jugador), String(reg.Fecha||'').slice(0,10), reg.Cuartos, reg.Minutos, reg.Titular); n++;
     });
     (data.Tarjetas || []).filter(nuevo).forEach(reg => {
       const j = String(reg.Jugador||''); if (!j) return;
@@ -2781,7 +2925,7 @@ async function recargarDatos() {
   if (!equipoActual) return;
   const RS = _registrosSemana;
   RS.asistencia = {}; RS.valoracion = {}; RS.conflictos = {};
-  RS.alineacion = {}; RS.tarjetas = {}; RS.quejas = []; RS.padres = []; RS.conflictoP = {}; RS.detalles = {};
+  RS.alineacion = {}; RS.tarjetas = {}; RS.quejas = []; RS.padres = []; RS.conflictoP = {}; RS.detalles = {}; RS.juego = {};
   const d = USAR_DATOS_EXCEL ? DATOS_EXCEL[equipoActual.id] : null;
   if (d) {
     if (d.asistencia) Object.keys(d.asistencia).forEach(j => { RS.asistencia[j] = d.asistencia[j].slice(); });
@@ -3475,6 +3619,7 @@ function mostrarStatsIndividuales() {
             ${alin.titular?`<div style="font-size:11px;font-weight:700;color:${alin.titular==='Sí'?'#065F46':'#1d4ed8'}">${alin.titular==='Sí'?'Titular':'Suplente'}</div>
             ${alin.actuacion?`<div style="font-size:9px;color:#374151">${alin.actuacion}</div>`:''}`:
             '<div style="font-size:11px;color:#9CA3AF">—</div>'}
+            ${(()=>{ const rj = resumenJuego(jug); return rj.convocado ? `<div style="font-size:10px;color:#1C2B4A;margin-top:3px;font-weight:700">PJ ${rj.pj} · ${rj.cuartos} cuartos · ${rj.minutos}'</div>` : ''; })()}
             ${tars.length>0?`<div style="font-size:9px;color:#B45309;margin-top:3px">🟨 ${tars.join(', ')}</div>`:''}
             ${confP>0?`<div style="font-size:9px;color:#991B1B;margin-top:3px">⚡ ${confP} conflicto${confP>1?'s':''}</div>`:''}
           </div>
@@ -3528,6 +3673,8 @@ function descargarPDFStats() {
       <td style="padding:5px 8px;text-align:center;background:${bg};font-weight:700;color:${fnj>0?'#991B1B':fj>0?'#B45309':'#065F46'};font-size:10px">${asis.length>0?p+'/'+asis.length:'—'}</td>
       ${cell(ate)}${cell(int_)}${cell(act)}${cell(med)}
       <td style="padding:5px 8px;text-align:center;background:${bg};font-size:10px">${alin.titular||'—'}</td>
+      ${(()=>{ const rj=resumenJuego(jug); const c=x=>`<td style="padding:5px 8px;text-align:center;background:${bg};font-size:10px">${x}</td>`;
+         return c(rj.convocado?rj.pj:'—')+c(rj.cuartos||'—')+c(rj.minutos?rj.minutos+"'":'—'); })()}
       <td style="padding:5px 8px;text-align:center;background:${bg};font-size:10px;color:${tars.length?'#B45309':'#9CA3AF'}">${tars.length||'—'}</td>
       <td style="padding:5px 8px;text-align:center;background:${bg};font-size:10px;color:${conf>0?'#991B1B':'#9CA3AF'}">${conf||'—'}</td>
     </tr>`;
@@ -3577,7 +3724,7 @@ ${nV>0?`<div class="sec">RESUMEN VALORACIÓN</div>
 <table><thead><tr>
   <th style="text-align:left">Jugador</th>
   <th>Asist.</th><th>Ate.</th><th>Int.</th><th>Act.</th><th>Media</th>
-  <th>Titular</th><th>Tarj.</th><th>Conf.</th>
+  <th>Titular</th><th>PJ</th><th>Cuartos</th><th>Min.</th><th>Tarj.</th><th>Conf.</th>
 </tr></thead><tbody>${rowsJug}</tbody></table>
 <div style="font-size:9px;color:#6B7280;text-align:center;margin-bottom:8px">🟢 ≥4.0 · 🟡 2.5–4.0 · 🔴 &lt;2.5</div>
 ${(()=>{ const it=[]; J.forEach(j=>detallesJugador(j).forEach(d=>it.push({j,d}))); if(!it.length) return '';
