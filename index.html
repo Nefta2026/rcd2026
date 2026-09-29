@@ -466,6 +466,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
         </div>
         <div class="solo-nefta">
+        <div class="field" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:8px 10px;margin-top:6px">
+          <label style="color:#1d4ed8">📅 Día de entrenamiento a analizar</label>
+          <select id="ss-dia" onchange="cambiarDiaStats(this.value)" style="font-weight:700"></select>
+          <div style="font-size:10px;color:#6B7280;margin-top:3px">Cada día se analiza por separado. Los informes semanal y mensual suman todos los días del periodo.</div>
+        </div>
         <div class="sep">Resumen por jugador</div>
         <div style="overflow-x:auto"><table class="jt">
           <thead><tr><th style="text-align:left;padding-left:7px">Jugador</th><th>Asist.</th><th>Fal.J</th><th>Fal.NJ</th><th>Ate.</th><th>Int.</th><th>Act.</th><th>Media</th></tr></thead>
@@ -872,7 +877,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 // ── Acumulador de registros semanales ────────────────────────────────────────
 const _registrosSemana = {
   asistencia: {}, valoracion: {}, conflictos: {},
-  alineacion: {}, tarjetas: {}, quejas: [], padres: [], conflictoP: {}, detalles: {}, juego: {},
+  alineacion: {}, tarjetas: {}, quejas: [], padres: [], conflictoP: {}, detalles: {}, juego: {}, raw: { as: [], va: [], ce: [] },
 };
 
 // ── LOPD ─────────────────────────────────────────────────────────────────────
@@ -1146,6 +1151,8 @@ function abrirEquipoConfirmado(key) {
   _registrosSemana.conflictoP = {};
   _registrosSemana.detalles   = {};
   _registrosSemana.juego      = {};
+  _registrosSemana.raw        = { as: [], va: [], ce: [] };
+  _diaSel = null;
   window._incidData = null;
   cargarDatosExcel(equipoActual.id);
   document.getElementById('app-equipo-nombre').innerHTML = '<span class="escudo-mini"></span>' + equipoActual.nombre.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
@@ -1577,7 +1584,7 @@ async function guardar(tipo) {
       // Acumular en memoria semanal
       J.forEach((jug,i)=>{
         const el = document.querySelector(`input[name="as-j-${i}"]:checked`);
-        if(el) acumularAsistencia(jug, el.value);
+        if(el) acumularAsistencia(jug, el.value, v('as-fecha'));
       });
       actualizarStatsAuto();
     }
@@ -1586,7 +1593,7 @@ async function guardar(tipo) {
       const h = ['Fecha','Equipo','Jugador','Atencion','Intensidad','Actitud','NotaEntrenador','Timestamp'];
       for (let i=0;i<J.length;i++) {
         await gasPost(ficha, h, [v('va-fecha'),eq,J[i],r(`va-ate-${i}`)||'—',r(`va-int-${i}`)||'—',r(`va-act-${i}`)||'—',v('va-nota'),ts()]);
-        acumularValoracion(J[i], r(`va-ate-${i}`), r(`va-int-${i}`), r(`va-act-${i}`));
+        acumularValoracion(J[i], r(`va-ate-${i}`), r(`va-int-${i}`), r(`va-act-${i}`), v('va-fecha'));
       }
       // Acumular alineación
       J.forEach((jug,i)=>{
@@ -2798,6 +2805,7 @@ async function marcarIncidencia(id, estado) {
 }
 
 function actualizarStatsAuto() {
+  reconstruirEntreno();
   calcularStatsEntreno();
   calcularStatsPartido();
   if (isNefta) mostrarStatsIndividuales();
@@ -2885,15 +2893,15 @@ async function cargarDesdeSheets(equipoId, silencioso) {
     const RS = _registrosSemana;
     (data.Asistencia || []).filter(nuevo).forEach(reg => {
       if (!reg.Jugador || !reg.Asistencia) return;
-      acumularAsistencia(String(reg.Jugador), String(reg.Asistencia)); n++;
+      acumularAsistencia(String(reg.Jugador), String(reg.Asistencia), reg.Fecha); n++;
     });
     (data.Valoracion || []).filter(nuevo).forEach(reg => {
       const a = parseFloat(reg.Atencion), i = parseFloat(reg.Intensidad), c = parseFloat(reg.Actitud);
       if (!reg.Jugador || isNaN(a) || isNaN(i) || isNaN(c)) return;
-      acumularValoracion(String(reg.Jugador), a, i, c); n++;
+      acumularValoracion(String(reg.Jugador), a, i, c, reg.Fecha); n++;
     });
     (data.ConflictoEntreno || []).filter(nuevo).forEach(reg => {
-      if (!reg.Jugador) return; acumularConflicto(String(reg.Jugador)); addDet('ConflictoEntreno', reg); n++;
+      if (!reg.Jugador) return; acumularConflicto(String(reg.Jugador), reg.Fecha); addDet('ConflictoEntreno', reg); n++;
     });
     (data.Alineacion || []).filter(nuevo).forEach(reg => {
       if (!reg.Jugador) return;
@@ -2925,7 +2933,7 @@ async function recargarDatos() {
   if (!equipoActual) return;
   const RS = _registrosSemana;
   RS.asistencia = {}; RS.valoracion = {}; RS.conflictos = {};
-  RS.alineacion = {}; RS.tarjetas = {}; RS.quejas = []; RS.padres = []; RS.conflictoP = {}; RS.detalles = {}; RS.juego = {};
+  RS.alineacion = {}; RS.tarjetas = {}; RS.quejas = []; RS.padres = []; RS.conflictoP = {}; RS.detalles = {}; RS.juego = {}; RS.raw = { as: [], va: [], ce: [] };
   const d = USAR_DATOS_EXCEL ? DATOS_EXCEL[equipoActual.id] : null;
   if (d) {
     if (d.asistencia) Object.keys(d.asistencia).forEach(j => { RS.asistencia[j] = d.asistencia[j].slice(); });
@@ -2940,24 +2948,62 @@ async function recargarDatos() {
 }
 
 
-function acumularAsistencia(jugador, estado) {
-  if (!_registrosSemana.asistencia[jugador]) _registrosSemana.asistencia[jugador] = [];
-  _registrosSemana.asistencia[jugador].push({
-    pres: estado==='Presente' ? 1:0,
-    fj:   estado==='Ausente justificada' ? 1:0,
-    fnj:  estado==='Ausente no justificada' ? 1:0,
-  });
+// Los registros se guardan por día (raw) y las estadísticas se reconstruyen
+// para el día elegido en «Día de entrenamiento» (o para todos, acumulado).
+function rawEntreno() { if (!_registrosSemana.raw) _registrosSemana.raw = { as: [], va: [], ce: [] }; return _registrosSemana.raw; }
+function acumularAsistencia(jugador, estado, fecha) {
+  const R = rawEntreno(), f = String(fecha || '').slice(0, 10);
+  const i = R.as.findIndex(x => x.f === f && x.j === jugador);      // mismo día y jugador: se sustituye
+  const reg = { f: f, j: jugador, e: estado };
+  if (i >= 0 && f) R.as[i] = reg; else R.as.push(reg);
+}
+function acumularValoracion(jugador, ate, int_, act, fecha) {
+  if (!(ate && int_ && act)) return;
+  const R = rawEntreno(), f = String(fecha || '').slice(0, 10);
+  const i = R.va.findIndex(x => x.f === f && x.j === jugador);
+  const reg = { f: f, j: jugador, ate: parseFloat(ate), int_: parseFloat(int_), act: parseFloat(act) };
+  if (i >= 0 && f) R.va[i] = reg; else R.va.push(reg);
+}
+function acumularConflicto(jugador, fecha) {
+  rawEntreno().ce.push({ f: String(fecha || '').slice(0, 10), j: jugador });
 }
 
-function acumularValoracion(jugador, ate, int_, act) {
-  if (!_registrosSemana.valoracion[jugador]) _registrosSemana.valoracion[jugador] = [];
-  if (ate&&int_&&act) _registrosSemana.valoracion[jugador].push({
-    ate:parseFloat(ate), int_:parseFloat(int_), act:parseFloat(act)
-  });
+let _diaSel = null;   // 'AAAA-MM-DD' | 'todos' | null (= último día)
+function diasEntreno() {
+  const R = rawEntreno(), d = {};
+  R.as.concat(R.va, R.ce).forEach(x => { if (x.f) d[x.f] = (d[x.f] || 0) + 1; });
+  return Object.keys(d).sort().reverse();
 }
-
-function acumularConflicto(jugador) {
-  _registrosSemana.conflictos[jugador] = (_registrosSemana.conflictos[jugador]||0) + 1;
+function reconstruirEntreno() {
+  const R = rawEntreno(), RS = _registrosSemana;
+  const dias = diasEntreno();
+  if (!isNefta) _diaSel = 'todos';
+  if (!_diaSel || (_diaSel !== 'todos' && dias.indexOf(_diaSel) < 0)) _diaSel = dias[0] || 'todos';
+  const ok = x => _diaSel === 'todos' || x.f === _diaSel;
+  RS.asistencia = {}; RS.valoracion = {}; RS.conflictos = {};
+  R.as.filter(ok).forEach(x => {
+    (RS.asistencia[x.j] = RS.asistencia[x.j] || []).push({ pres: x.e === 'Presente' ? 1 : 0, fj: x.e === 'Ausente justificada' ? 1 : 0, fnj: x.e === 'Ausente no justificada' ? 1 : 0 });
+  });
+  R.va.filter(ok).forEach(x => { (RS.valoracion[x.j] = RS.valoracion[x.j] || []).push({ ate: x.ate, int_: x.int_, act: x.act }); });
+  R.ce.filter(ok).forEach(x => { RS.conflictos[x.j] = (RS.conflictos[x.j] || 0) + 1; });
+  pintarSelectorDia(dias);
+}
+function pintarSelectorDia(dias) {
+  const sel = document.getElementById('ss-dia'); if (!sel) return;
+  const nombreDia = f => { const d = new Date(f + 'T12:00:00'); return d.toLocaleDateString('es-ES', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }); };
+  const R = rawEntreno();
+  sel.innerHTML = dias.map(f => {
+    const n = R.as.filter(x => x.f === f).length;
+    return `<option value="${f}">${nombreDia(f)}${n ? ' · ' + n + ' jugadores' : ''}</option>`;
+  }).join('') + `<option value="todos">📊 Todas las sesiones (acumulado)</option>`;
+  if (!dias.length) sel.innerHTML = '<option value="todos">Sin registros de entrenamiento</option>';
+  sel.value = _diaSel || 'todos';
+}
+function cambiarDiaStats(v) {
+  _diaSel = v;
+  actualizarStatsAuto();
+  const gc = document.getElementById('graficos-container');
+  if (gc && gc.style.display === 'block') { try { generarGraficosStats(); } catch(e) {} }
 }
 
 // ── Auto-stats entrenamiento — usa datos guardados en _registrosSemana ──────
@@ -3703,7 +3749,7 @@ th:first-child{text-align:left}
 .lopd{font-size:7px;color:#9CA3AF;margin-top:10px;line-height:1.5;border-top:1px solid #E5E7EB;padding-top:8px}
 @media print{body{padding:0}}
 </style></head><body>
-<div class="hdr"><h1>RCD Santa Ponça · Estadísticas semanales · ${eq}</h1>
+<div class="hdr"><h1>RCD Santa Ponça · ${_diaSel && _diaSel !== 'todos' ? 'Estadísticas del ' + new Date(_diaSel + 'T12:00:00').toLocaleDateString('es-ES', {weekday:'long', day:'2-digit', month:'2-digit', year:'numeric'}) : 'Estadísticas acumuladas'} · ${eq}</h1>
 <p>Entrenador: ${ent} · ${hoy} · Psicología Deportiva · Neftalí Martínez B-03305</p></div>
 <div class="body">
 <div class="sec">RESUMEN ASISTENCIA</div>
