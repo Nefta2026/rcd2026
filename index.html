@@ -492,6 +492,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
         </div>
 
+        <div id="faltas-jugadores" style="margin-top:12px"></div>
         </div><!-- /solo-nefta -->
         <div id="eval-auto-result" style="display:none;background:#DBEAFE;border-left:3px solid #2563EB;padding:12px 14px;border-radius:6px;margin-bottom:10px;font-size:12px;color:#1C2B4A;line-height:1.8"></div>
         <div class="field">
@@ -2263,7 +2264,7 @@ function textoPautaOperativa(P) {
 
 function pintarIncidencias(data) {
   window._incidData = data;
-  if (isNefta) { mostrarStatsIndividuales(); actualizarRecomendacion(); }
+  if (isNefta) { mostrarStatsIndividuales(); actualizarRecomendacion(); try { pintarFaltas(); } catch(e) {} }
   const titulo = {ConflictoEntreno:'Conflicto en entreno', ConflictoPartido:'Conflicto en partido', Quejas:'Queja', Tarjetas:'Tarjeta', ConductaFamilias:'Conducta de familias'};
   const color  = {ConflictoEntreno:'#B45309', ConflictoPartido:'#C2410C', Quejas:'#1d4ed8', Tarjetas:'#A16207', ConductaFamilias:'#7C3AED'};
   const modos  = {entreno:['ConflictoEntreno'], partido:['ConflictoPartido','Quejas','Tarjetas','ConductaFamilias']};
@@ -2613,6 +2614,37 @@ function generarGraficosPartido(aviso) {
   if (aviso) toast('✅ Gráficos del partido generados');
 }
 
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FALTAS POR JUGADOR · días, justificada o no y motivo (solo Nefta)
+// Se muestran todas las sesiones registradas (no dependen del día elegido).
+// ══════════════════════════════════════════════════════════════════════════════
+function motivoFalta(j, f) {
+  const l = (window._incidData && window._incidData.Ausencias) || [];
+  const x = l.find(r => String(r.Fecha || '').slice(0, 10) === f && normNombre(nombreEnPlantilla(r.Jugador || '')) === normNombre(j));
+  return x ? String(x.Motivo || '') : '';
+}
+function faltasJugador(j) {
+  return rawEntreno().as.filter(x => x.j === j && x.e && x.e !== 'Presente')
+    .sort((a, b) => String(a.f).localeCompare(String(b.f)))
+    .map(x => ({ f: x.f, nj: x.e === 'Ausente no justificada', motivo: motivoFalta(j, x.f) }));
+}
+function htmlDiasFalta(l) {
+  return l.map(x => `<span style="display:inline-block;background:${x.nj ? '#FEE2E2' : '#FEF3C7'};color:${x.nj ? '#991B1B' : '#92400E'};border-radius:4px;padding:1px 6px;margin:1px 2px;font-size:10px;font-weight:700">${fechaCorta(x.f)} ${x.nj ? '❌ NJ' : '📋 J'}${x.motivo ? ' · ' + escI(x.motivo) : ''}</span>`).join('');
+}
+function pintarFaltas() {
+  const box = document.getElementById('faltas-jugadores'); if (!box) return;
+  if (!isNefta) { box.innerHTML = ''; return; }
+  const J = jugs(), ses = diasEntreno().length;
+  const filas = J.map(j => ({ j, l: faltasJugador(j) })).filter(x => x.l.length);
+  box.innerHTML = `<div class="sep">🗓️ Faltas por jugador · ${ses} sesión(es) registradas</div>` + (filas.length
+    ? `<div style="overflow-x:auto"><table class="jt"><thead><tr><th style="text-align:left;padding-left:7px">Jugador</th><th>Just.</th><th>No just.</th><th style="text-align:left">Días</th></tr></thead><tbody>` +
+      filas.map(x => { const nj = x.l.filter(y => y.nj).length;
+        return `<tr><td class="jn">${escI(x.j)}</td><td style="text-align:center;color:#92400E;font-weight:700">${x.l.length - nj}</td><td style="text-align:center;color:${nj ? '#991B1B' : '#9CA3AF'};font-weight:700">${nj}</td><td>${htmlDiasFalta(x.l)}</td></tr>`; }).join('') +
+      `</tbody></table></div>`
+    : `<div style="font-size:12px;color:#065F46;padding:6px 0">✅ Ningún jugador ha faltado en las sesiones registradas.</div>`);
+}
+
 // ── Stats partido — acceso con contraseña ────────────────────────────────────
 const STATS_PW_H = '034cbb657c3ece7581cc34cab50278ec54380a974c1985ab9bd29cf5e83e5257';
 
@@ -2807,6 +2839,7 @@ async function marcarIncidencia(id, estado) {
 function actualizarStatsAuto() {
   reconstruirEntreno();
   calcularStatsEntreno();
+  try { pintarFaltas(); } catch(e) {}
   calcularStatsPartido();
   if (isNefta) mostrarStatsIndividuales();
   actualizarRecomendacion();
@@ -3670,6 +3703,7 @@ function mostrarStatsIndividuales() {
             ${confP>0?`<div style="font-size:9px;color:#991B1B;margin-top:3px">⚡ ${confP} conflicto${confP>1?'s':''}</div>`:''}
           </div>
         </div>
+        ${(()=>{ const l = faltasJugador(jug); return l.length ? `<div style="margin-top:6px;font-size:10px;font-weight:800;color:#374151">🗓️ Faltas: ${htmlDiasFalta(l)}</div>` : ''; })()}
         ${htmlDetalles(dets, 2)}
       </div>
     </div>`;
@@ -3773,6 +3807,9 @@ ${nV>0?`<div class="sec">RESUMEN VALORACIÓN</div>
   <th>Titular</th><th>PJ</th><th>Cuartos</th><th>Min.</th><th>Tarj.</th><th>Conf.</th>
 </tr></thead><tbody>${rowsJug}</tbody></table>
 <div style="font-size:9px;color:#6B7280;text-align:center;margin-bottom:8px">🟢 ≥4.0 · 🟡 2.5–4.0 · 🔴 &lt;2.5</div>
+${(()=>{ const f=J.map(j=>({j,l:faltasJugador(j)})).filter(x=>x.l.length); if(!f.length) return '';
+  return `<div class="sec">FALTAS DE ASISTENCIA (todas las sesiones)</div><table><thead><tr><th style="text-align:left">Jugador</th><th>Just.</th><th>No just.</th><th style="text-align:left">Días</th></tr></thead><tbody>`+
+  f.map((x,i)=>{const nj=x.l.filter(y=>y.nj).length;const bg=i%2?'#F3F4F6':'#FAFAF9';return `<tr><td style="padding:5px 8px;font-size:10px;background:${bg}"><b>${escI(x.j)}</b></td><td style="padding:5px 8px;text-align:center;font-size:10px;background:${bg}">${x.l.length-nj}</td><td style="padding:5px 8px;text-align:center;font-size:10px;background:${bg};color:${nj?'#991B1B':'#6B7280'}">${nj}</td><td style="padding:5px 8px;font-size:10px;background:${bg}">${x.l.map(y=>fechaCorta(y.f)+' '+(y.nj?'NJ':'J')+(y.motivo?' ('+escI(y.motivo)+')':'')).join(' · ')}</td></tr>`;}).join('')+`</tbody></table>`; })()}
 ${(()=>{ const it=[]; J.forEach(j=>detallesJugador(j).forEach(d=>it.push({j,d}))); if(!it.length) return '';
   return `<div class="sec">INCIDENCIAS Y PAUTAS PARA EL ENTRENADOR</div><table><thead><tr><th style="text-align:left">Jugador</th><th style="text-align:left">Incidencia</th><th style="text-align:left">Pauta</th></tr></thead><tbody>`+
   it.map(({j,d},i)=>`<tr><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};vertical-align:top"><b>${escI(j)}</b></td><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};vertical-align:top">${d.titulo}: <b>${escI(d.tipo)}</b>${d.decision?' · <b style="color:'+(d.decision==='Resuelta'?'#065F46':'#991B1B')+'">'+(d.decision==='Resuelta'?'✅ Resuelta':'❌ No resuelta')+'</b>':''}<br><span style="color:#6B7280">${d.fecha}${d.minuto?' · min '+escI(d.minuto):''}${d.grav?' · G'+escI(d.grav):''}${d.estado?' · '+escI(d.estado):''}</span></td><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};color:#064E3B;vertical-align:top"><b>🎯</b> ${escI(d.po.objetivo)}<br><b>⚽ Jugador:</b> ${d.po.jugador.slice(0,2).map(escI).join(' ')}<br><b>🧑‍🏫 Entrenador:</b> ${d.po.entrenador.slice(0,2).map(escI).join(' ')}<br><b>📏</b> ${escI(d.po.medida)}</td></tr>`).join('')+`</tbody></table>`; })()}
