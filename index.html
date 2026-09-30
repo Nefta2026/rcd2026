@@ -377,8 +377,37 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="card-title">⭐ Valoración individual</div>
         <div class="field"><label>Fecha</label><input type="date" id="va-fecha"></div>
         <div class="alert-info">Valora del 1 (muy bajo) al 5 (excelente) cada indicador.</div>
+        <details class="guia-val" style="margin:8px 0 10px;border:1px solid #E5E7EB;border-radius:8px;background:#fff">
+        <summary style="cursor:pointer;padding:9px 12px;font-weight:800;font-size:13px;color:#1C2B4A">📏 Guía para puntuar del 1 al 5 <span style="font-weight:400;color:#6B7280;font-size:11px">(pulsa para ver qué significa cada número)</span></summary>
+        <div style="padding:0 10px 10px">
+        <div style="font-size:11px;color:#374151;margin-bottom:8px">Para que todos puntuemos igual: puntúa justo al terminar la sesión y piensa en <b>lo que has visto hoy</b>, no en cómo es el jugador normalmente.</div>
+        <div style="border-left:4px solid #1d4ed8;background:#DBEAFE;border-radius:6px;padding:7px 10px;margin-bottom:6px">
+        <div style="font-weight:800;font-size:12px;color:#1d4ed8;margin-bottom:4px">👁️ Atención</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#1d4ed8">1</b> Hay que repetirle las instrucciones casi siempre; se distrae con facilidad.</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#1d4ed8">2</b> Se despista a menudo; necesita recordatorios frecuentes.</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#1d4ed8">3</b> Sigue las instrucciones, con algún despiste.</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#1d4ed8">4</b> Escucha y ejecuta bien casi siempre.</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#1d4ed8">5</b> Lo hace a la primera, está pendiente y ayuda a sus compañeros a entenderlo.</div>
+        </div>
+        <div style="border-left:4px solid #B45309;background:#FEF3C7;border-radius:6px;padding:7px 10px;margin-bottom:6px">
+        <div style="font-weight:800;font-size:12px;color:#B45309;margin-bottom:4px">⚡ Intensidad</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#B45309">1</b> Participa sin esfuerzo: camina o se para en los ejercicios.</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#B45309">2</b> Se esfuerza poco y solo a ratos.</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#B45309">3</b> Esfuerzo normal, con altibajos.</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#B45309">4</b> Se esfuerza en casi todos los ejercicios.</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#B45309">5</b> Máximo esfuerzo de principio a fin: presiona y vuelve siempre.</div>
+        </div>
+        <div style="border-left:4px solid #065F46;background:#D1FAE5;border-radius:6px;padding:7px 10px;margin-bottom:6px">
+        <div style="font-weight:800;font-size:12px;color:#065F46;margin-bottom:4px">🤝 Actitud</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#065F46">1</b> Protesta, no respeta las normas o molesta a sus compañeros.</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#065F46">2</b> Actitud negativa en varios momentos de la sesión.</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#065F46">3</b> Correcta, sin destacar.</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#065F46">4</b> Positiva: respeta, anima y acepta las correcciones.</div>
+        <div style="font-size:11px;line-height:1.45;margin-bottom:2px"><b style="display:inline-block;min-width:18px;color:#065F46">5</b> Ejemplar: anima, ayuda a sus compañeros y es un referente.</div>
+        </div>
+        </div></details>
         <div style="overflow-x:auto"><table class="jt">
-          <thead><tr><th style="text-align:left;padding-left:7px;min-width:80px">Jugador</th><th>👁️ Atención</th><th>⚡ Intensidad</th><th>🤝 Actitud</th></tr></thead>
+          <thead><tr><th style="text-align:left;padding-left:7px;min-width:80px">Jugador</th><th title="1: Hay que repetirle las instrucciones casi siempre; se distrae con facilidad. · 2: Se despista a menudo; necesita recordatorios frecuentes. · 3: Sigue las instrucciones, con algún despiste. · 4: Escucha y ejecuta bien casi siempre. · 5: Lo hace a la primera, está pendiente y ayuda a sus compañeros a entenderlo.">👁️ Atención</th><th title="1: Participa sin esfuerzo: camina o se para en los ejercicios. · 2: Se esfuerza poco y solo a ratos. · 3: Esfuerzo normal, con altibajos. · 4: Se esfuerza en casi todos los ejercicios. · 5: Máximo esfuerzo de principio a fin: presiona y vuelve siempre.">⚡ Intensidad</th><th title="1: Protesta, no respeta las normas o molesta a sus compañeros. · 2: Actitud negativa en varios momentos de la sesión. · 3: Correcta, sin destacar. · 4: Positiva: respeta, anima y acepta las correcciones. · 5: Ejemplar: anima, ayuda a sus compañeros y es un referente.">🤝 Actitud</th></tr></thead>
           <tbody id="tb-valoracion"></tbody>
         </table></div>
         <div class="field" style="margin-top:10px"><label>Nota del entrenador</label><textarea id="va-nota" placeholder="Aspectos destacados del grupo hoy..."></textarea></div>
