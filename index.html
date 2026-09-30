@@ -2508,9 +2508,10 @@ function htmlEstadoCaso(r) {
   const id = idCaso(r), est = (_casosEstado[id] || {}).estado || '';
   const idJs = id.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
   return `<div style="margin-top:10px;border-top:1px solid #FECACA;padding-top:10px">
-    <div style="font-size:10px;font-weight:800;color:#374151;margin-bottom:6px">ESTADO DEL CASO${est === 'No resuelta' ? ' · <span style="color:#991B1B">❌ No resuelta</span>' : ''}</div>
+    <div style="font-size:10px;font-weight:800;color:#374151;margin-bottom:6px">ESTADO DEL CASO${est === 'No resuelta' ? ' · <span style="color:#991B1B">❌ No resuelta</span>' : est === 'En proceso' ? ' · <span style="color:#B45309">🔄 En proceso</span>' : ''}</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button onclick="event.stopPropagation(); marcarCaso('${idJs}','Resuelta')" style="flex:1;min-width:120px;background:#065F46;color:#fff;border:none;border-radius:7px;padding:9px;font-weight:800;font-size:12px;cursor:pointer">✅ Resuelta</button>
+      <button onclick="event.stopPropagation(); marcarCaso('${idJs}','En proceso')" style="flex:1;min-width:110px;background:${est === 'En proceso' ? '#B45309' : '#fff'};color:${est === 'En proceso' ? '#fff' : '#B45309'};border:2px solid #B45309;border-radius:7px;padding:9px;font-weight:800;font-size:12px;cursor:pointer">🔄 En proceso</button>
       <button onclick="event.stopPropagation(); marcarCaso('${idJs}','No resuelta')" style="flex:1;min-width:120px;background:${est === 'No resuelta' ? '#991B1B' : '#fff'};color:${est === 'No resuelta' ? '#fff' : '#991B1B'};border:2px solid #991B1B;border-radius:7px;padding:9px;font-weight:800;font-size:12px;cursor:pointer">❌ No resuelta</button>
     </div>
   </div>`;
@@ -2524,7 +2525,7 @@ async function marcarCaso(id, estado) {
       body: JSON.stringify({ ficha: 'CASO_ESTADO', id: id, estado: estado, clave: _clNefta }) });
     const d = await res.json();
     if (!d.ok) throw new Error(d.error || 'Error');
-    toast(estado === 'Resuelta' ? '✅ Caso marcado como resuelto' : '❌ Caso marcado como no resuelto');
+    toast(estado === 'Resuelta' ? '✅ Caso marcado como resuelto' : estado === 'En proceso' ? '🔄 Caso marcado en proceso' : '❌ Caso marcado como no resuelto');
   } catch(e) {
     toast('⚠️ No se pudo guardar el estado del caso. Inténtalo de nuevo.', true);
     delete _casosEstado[id];
