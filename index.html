@@ -365,7 +365,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
         </div>
         <div class="sep">Jugadores</div>
-        <div style="overflow-x:auto"><table class="jt"><thead><tr><th style="text-align:left;padding-left:7px">Jugador</th><th>Asistencia</th><th>Motivo</th><th>Conducta</th></tr></thead><tbody id="tb-asistencia"></tbody></table></div>
+        <div style="overflow-x:auto"><table class="jt"><thead><tr><th style="text-align:left;padding-left:7px">Jugador</th><th>Asistencia</th><th>Motivo</th><th>Comportamiento</th></tr></thead><tbody id="tb-asistencia"></tbody></table></div>
         <div class="field" style="margin-top:10px"><label>Observaciones</label><textarea id="as-obs" placeholder="Objetivos, incidencias, dinámica del grupo..."></textarea></div>
         <button class="btn btn-v" onclick="guardar('asistencia')" id="btn-as">💾 Guardar asistencia</button>
       </div>
@@ -440,7 +440,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="abc">
           <div class="abc-lbl">A → B → C (para gravedad 3 o 4)</div>
           <div class="field" style="margin-top:8px"><label>🔵 A — Antecedente</label><textarea id="ce-a" style="min-height:50px" placeholder="¿Qué pasó justo antes?"></textarea></div>
-          <div class="field"><label>🟡 B — Conducta exacta</label><textarea id="ce-b" style="min-height:50px" placeholder="¿Qué hizo el jugador?"></textarea></div>
+          <div class="field"><label>🟡 B — Qué hizo exactamente</label><textarea id="ce-b" style="min-height:50px" placeholder="¿Qué hizo el jugador?"></textarea></div>
           <div class="field"><label>🟢 C — Consecuencia</label><textarea id="ce-c" style="min-height:50px" placeholder="¿Qué ocurrió después?"></textarea></div>
         </div>
         <button class="btn btn-v" onclick="guardar('conflicto-e')" id="btn-ce">💾 Guardar conflicto</button>
@@ -727,7 +727,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="abc">
           <div class="abc-lbl">A → B → C</div>
           <div class="field" style="margin-top:8px"><label>🔵 A — Antecedente</label><textarea id="ta-a" style="min-height:45px" placeholder="¿Qué pasó antes de la tarjeta?"></textarea></div>
-          <div class="field"><label>🟡 B — Conducta del jugador</label><textarea id="ta-b" style="min-height:45px" placeholder="¿Qué hizo exactamente?"></textarea></div>
+          <div class="field"><label>🟡 B — Qué hizo el jugador</label><textarea id="ta-b" style="min-height:45px" placeholder="¿Qué hizo exactamente?"></textarea></div>
           <div class="field"><label>🟢 C — Consecuencia</label><textarea id="ta-c" style="min-height:45px" placeholder="Impacto en el partido..."></textarea></div>
         </div>
         <div class="field"><label>¿Patrón repetido?</label>
@@ -756,7 +756,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="field"><label>Rival</label><input type="text" id="pa-rival" placeholder="Rival"></div>
         </div>
         <div class="field"><label>Jugador relacionado</label><select id="pa-jugador"><option value="">— General —</option></select></div>
-        <div class="field"><label>Tipo de conducta</label>
+        <div class="field"><label>Tipo</label>
           <div class="rg">
             <label class="rp"><input type="radio" name="pa-tipo" value="Crítica al árbitro en voz alta"> 🟨 Critica árbitro</label>
             <label class="rp"><input type="radio" name="pa-tipo" value="Instrucciones desde la grada"> 📢 Instrucciones</label>
@@ -784,7 +784,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
         </div>
         <div class="field"><label>Descripción</label><textarea id="pa-desc" placeholder="Describir brevemente lo ocurrido..."></textarea></div>
-        <button class="btn btn-n" onclick="guardar('padres')" id="btn-pa">💾 Guardar conducta familias</button>
+        <button class="btn btn-n" onclick="guardar('padres')" id="btn-pa">💾 Guardar comportamiento de familias</button>
       </div>
     </div>
 
@@ -1527,7 +1527,7 @@ function validar(tipo) {
   }
   else if (tipo === 'padres') {
     v_check('pa-fecha', 'Fecha');
-    r_check('pa-tipo', 'Tipo de conducta');
+    r_check('pa-tipo', 'Tipo');
     r_check('pa-grav', 'Gravedad');
   }
   else if (tipo === 'stats-partido') {
@@ -1695,7 +1695,7 @@ async function guardar(tipo) {
         'conflicto-e':'💾 Guardar conflicto', 'stats-semana':'💾 Guardar estadísticas',
         alineacion:'💾 Guardar alineación', 'conflicto-p':'💾 Guardar conflicto',
         quejas:'💾 Guardar queja', tarjetas:'💾 Guardar tarjeta',
-        padres:'💾 Guardar conducta familias', 'stats-partido':'💾 Guardar estadísticas'
+        padres:'💾 Guardar comportamiento de familias', 'stats-partido':'💾 Guardar estadísticas'
       };
       btn.textContent = labels[tipo] || '💾 Guardar';
     }
@@ -2052,7 +2052,7 @@ function pintarArbitros(evs) {
         ${linea('Árbitro', d['d-arbitro'])}
         ${linea('Gradas', d['gradas'])}${linea('Insultos al árbitro', d['amb-ins-arb'])}${linea('Incidencias ambiente', d['amb-incid-txt'])}
         ${linea('Cuestionamiento entrenadores', d['ent-cuest'])}${linea('Sanción entrenador', d['ent-sancion'])}${linea('Obs. entrenadores', d['ent-obs'])}
-        ${linea('Conducta antideportiva', d['jug-antidep'])}${linea('Detalle antideportiva', d['jug-antidep-txt'])}
+        ${linea('Juego antideportivo', d['jug-antidep'])}${linea('Detalle antideportiva', d['jug-antidep-txt'])}
         ${linea('Capitán local', d['cap-l'])}${linea('Capitán visitante', d['cap-v'])}${linea('Obs. capitanes', d['cap-obs'])}
         ${linea('Riesgo / intimidación', d['riesgo'])}${linea('Detalle riesgo', d['riesgo-txt'])}${linea('¿Volvería?', d['volveria'])}
         ${linea('Aspectos positivos', d['pos-txt'])}${linea('Propuestas de mejora', d['mejora-txt'])}${linea('Comentario libre', d['coment-txt'])}
@@ -2191,12 +2191,12 @@ function pautaOperativa(tipo, r) {
       medida: 'Nº de protestas por partido o sesión. Objetivo: 0 en 3 partidos.',
       refs: 'Entrenamiento en autoinstrucciones (Meichenbaum, 1977).' };
     else if (/agres|violen|f[ií]sic/.test(txt)) P = {
-      objetivo: '0 conductas de contacto agresivo; ante el enfado, salir de la jugada y avisar.',
+      objetivo: 'Ninguna acción agresiva; si se enfada, salir de la jugada y avisar.',
       jugador: ['Si notas que te enfadas mucho, sal de la jugada y levanta la mano.',
                 'Respira 3 veces antes de volver.'],
       entrenador: ['Retirada inmediata de la tarea por seguridad y registro A-B-C completo.',
                    'Aviso a Nefta en el mismo día para un plan individual con la familia.'],
-      medida: 'Frecuencia de conductas agresivas por sesión (objetivo 0).',
+      medida: 'Número de acciones agresivas por sesión (objetivo 0).',
       refs: 'Plan de intervención conductual basado en la función (Cooper, Heron y Heward, 2020).' };
     else if (/puntual/.test(txt)) P = {
       objetivo: 'Llegar vestido y preparado 10 minutos antes del inicio.',
@@ -2205,10 +2205,10 @@ function pautaOperativa(tipo, r) {
       medida: 'Llega a tiempo sí/no por sesión. Objetivo: 100 % en 2 semanas.',
       refs: 'Reforzamiento positivo (Cooper, Heron y Heward, 2020).' };
     else P = {
-      objetivo: 'Mantener la conducta adecuada durante las tareas (definir con el entrenador la conducta concreta).',
+      objetivo: 'Mantener un buen comportamiento durante los ejercicios (concretar con el entrenador qué se espera).',
       jugador: ['Sigue las normas del grupo y escucha las instrucciones.'],
-      entrenador: ['Completa el registro A-B-C para identificar la función.', 'Refuerza de forma específica la conducta adecuada cuando aparezca.'],
-      medida: 'Frecuencia de la conducta por sesión durante 2 semanas.',
+      entrenador: ['Anota qué pasa justo antes y justo después para entender por qué ocurre.', 'Felicita de forma concreta cuando lo haga bien.'],
+      medida: 'Número de veces que ocurre por sesión durante 2 semanas.',
       refs: 'Análisis funcional (Miltenberger, 2016).' };
     if (tipo === 'ConflictoPartido') P.entrenador.push('En el descanso: refuerza el autocontrol y el foco en la «siguiente jugada», sin señalarle ante el grupo.');
   } else if (tipo === 'Tarjetas') {
@@ -2219,7 +2219,7 @@ function pautaOperativa(tipo, r) {
       medida: 'Protestas y tarjetas por partido. Objetivo: 0 en 3 partidos.',
       refs: 'Entrenamiento en autoinstrucciones (Meichenbaum, 1977).' };
     else P = {
-      objetivo: 'Terminar el partido sin tarjetas por conducta.',
+      objetivo: 'Terminar el partido sin tarjetas por protestas o faltas de respeto.',
       jugador: ['Si te enfadas, aléjate de la jugada y respira.'],
       entrenador: ['Revisa con él, en calma, qué alternativa tenía y ensáyala en el siguiente entrenamiento.', 'Si es roja, seguimiento individual con Nefta.'],
       medida: 'Tarjetas por partido.',
@@ -2247,16 +2247,16 @@ function pautasIncidencia(tipo, r) {
 function htmlPautaOperativa(P, compacto) {
   const li = a => a.map(x => `<div style="margin:2px 0 2px 8px">• ${escI(x)}</div>`).join('');
   return `<div style="font-size:12px;line-height:1.5;color:#1F2937">
-    <div style="background:#EEF2FF;border-left:3px solid #4F46E5;padding:5px 9px;border-radius:4px;margin-bottom:5px"><b style="color:#3730A3">🎯 Conducta objetivo:</b> ${escI(P.objetivo)}</div>
+    <div style="background:#EEF2FF;border-left:3px solid #4F46E5;padding:5px 9px;border-radius:4px;margin-bottom:5px"><b style="color:#3730A3">🎯 Objetivo:</b> ${escI(P.objetivo)}</div>
     ${P.jugador.length?`<div style="background:#ECFEFF;border-left:3px solid #0891B2;padding:5px 9px;border-radius:4px;margin-bottom:5px"><b style="color:#155E75">⚽ Para el jugador:</b>${li(compacto?P.jugador.slice(0,2):P.jugador)}</div>`:''}
     <div style="background:#ECFDF5;border-left:3px solid #059669;padding:5px 9px;border-radius:4px;margin-bottom:5px"><b style="color:#065F46">🧑‍🏫 Para el entrenador:</b>${li(compacto?P.entrenador.slice(0,3):P.entrenador)}</div>
     <div style="background:#FFFBEB;border-left:3px solid #D97706;padding:5px 9px;border-radius:4px;margin-bottom:3px"><b style="color:#92400E">📏 Cómo se mide:</b> ${escI(P.medida)}</div>
-    ${!compacto && P.refs?`<div style="font-size:10px;color:#6B7280">Base técnica: ${escI(P.refs)}</div>`:''}
+
   </div>`;
 }
 
 function textoPautaOperativa(P) {
-  return '🎯 Conducta objetivo: ' + P.objetivo +
+  return '🎯 Objetivo: ' + P.objetivo +
     (P.jugador.length ? '\n\n⚽ Para el jugador:\n' + P.jugador.map(x => '• ' + x).join('\n') : '') +
     '\n\n🧑‍🏫 Para el entrenador:\n' + P.entrenador.map(x => '• ' + x).join('\n') +
     '\n\n📏 Cómo se mide: ' + P.medida;
@@ -2265,7 +2265,7 @@ function textoPautaOperativa(P) {
 function pintarIncidencias(data) {
   window._incidData = data;
   if (isNefta) { mostrarStatsIndividuales(); actualizarRecomendacion(); try { pintarFaltas(); } catch(e) {} }
-  const titulo = {ConflictoEntreno:'Conflicto en entreno', ConflictoPartido:'Conflicto en partido', Quejas:'Queja', Tarjetas:'Tarjeta', ConductaFamilias:'Conducta de familias'};
+  const titulo = {ConflictoEntreno:'Conflicto en entreno', ConflictoPartido:'Conflicto en partido', Quejas:'Queja', Tarjetas:'Tarjeta', ConductaFamilias:'Comportamiento de familias'};
   const color  = {ConflictoEntreno:'#B45309', ConflictoPartido:'#C2410C', Quejas:'#1d4ed8', Tarjetas:'#A16207', ConductaFamilias:'#7C3AED'};
   const modos  = {entreno:['ConflictoEntreno'], partido:['ConflictoPartido','Quejas','Tarjetas','ConductaFamilias']};
 
@@ -2311,9 +2311,9 @@ function pintarIncidencias(data) {
           ${fila('Quién', r['Quien'], '#F3F4F6', '#6B7280')}
           ${fila('Descripción', r['Descripcion'], '#F3F4F6', '#6B7280')}
           ${fila('Motivo', r['Motivo'], '#F3F4F6', '#6B7280')}
-          ${fila('Tipo de conducta', r['Tipo conducta'], '#F3F4F6', '#6B7280')}
+          ${fila('Tipo', r['Tipo conducta'], '#F3F4F6', '#6B7280')}
           ${fila('A · Antecedente', r['A (Antecedente)'], '#DBEAFE', '#2563EB')}
-          ${fila('B · Conducta', r['B (Conducta)'], '#FEE2E2', '#991B1B')}
+          ${fila('B · Qué pasó', r['B (Conducta)'], '#FEE2E2', '#991B1B')}
           ${fila('C · Consecuencia', r['C (Consecuencia)'], '#FEF3C7', '#B45309')}
           ${fila('Patrón', r['Patron'], '#F3F4F6', '#6B7280')}
           ${fila('Acción tomada', r['Accion'] || r['Accion tomada'], '#F0FDF4', '#065F46')}
@@ -2798,6 +2798,7 @@ function actualizarRecomendacion() {
   box.innerHTML =
     (pend.length
       ? '<div style="font-weight:800;margin-bottom:6px">Pautas para el entrenador según las incidencias pendientes:</div>' +
+        '<div style="font-size:11px;color:#1d4ed8;margin-bottom:8px">ℹ️ Las incidencias en proceso se irán hablando con cada entrenador para conocer la evolución del caso.</div>' +
         pend.map(({ j, d }) => `<div style="margin-bottom:10px;font-size:12px;padding-bottom:8px;border-bottom:1px dashed #A7F3D0"><b>${escI(j)}</b> · ${d.titulo}: <b>${escI(d.tipo)}</b> (${d.fecha}${d.grav?', G'+escI(d.grav):''})<br>
           <div style="margin-top:4px">${htmlPautaOperativa(d.po, true)}</div>${botonesIncidencia(d)}</div>`).join('')
       : '<div style="font-weight:800;margin-bottom:6px">✅ No hay incidencias pendientes.</div>') +
@@ -3406,7 +3407,7 @@ function poblarCasosGraves() {
           <div style="background:#F9FAFB;border-radius:5px;padding:8px 10px"><div style="font-size:9px;color:#6B7280;font-weight:700;margin-bottom:3px">ENTRENADOR</div><div>${r.entrenador||'—'}</div></div>
         </div>
         ${r.antecedente?`<div style="margin-bottom:8px;padding:8px 12px;background:#DBEAFE;border-left:3px solid #2563EB;border-radius:4px"><div style="font-size:9px;font-weight:700;color:#1d4ed8;margin-bottom:3px">A — ANTECEDENTE</div><div>${r.antecedente}</div></div>`:''}
-        ${r.conducta?`<div style="margin-bottom:8px;padding:8px 12px;background:#FEE2E2;border-left:3px solid #991B1B;border-radius:4px"><div style="font-size:9px;font-weight:700;color:#991B1B;margin-bottom:3px">B — CONDUCTA</div><div>${r.conducta}</div></div>`:''}
+        ${r.conducta?`<div style="margin-bottom:8px;padding:8px 12px;background:#FEE2E2;border-left:3px solid #991B1B;border-radius:4px"><div style="font-size:9px;font-weight:700;color:#991B1B;margin-bottom:3px">B — QUÉ PASÓ</div><div>${r.conducta}</div></div>`:''}
         ${r.consecuencia?`<div style="margin-bottom:8px;padding:8px 12px;background:#FEF3C7;border-left:3px solid #B45309;border-radius:4px"><div style="font-size:9px;font-weight:700;color:#B45309;margin-bottom:3px">C — CONSECUENCIA</div><div>${r.consecuencia}</div></div>`:''}
         ${r.accion?`<div style="margin-bottom:8px;padding:8px 12px;background:#F0FDF4;border-left:3px solid #065F46;border-radius:4px"><div style="font-size:9px;font-weight:700;color:#065F46;margin-bottom:3px">ACCIÓN TOMADA</div><div>${r.accion}</div></div>`:''}
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
@@ -3481,38 +3482,38 @@ function mostrarAlertaCasosGraves() {
     let funcion   = '';
     let tecnicas  = [];
 
-    // Análisis funcional — identificar función de la conducta
+    // Posible causa y recomendaciones
     if (consec.includes('superior') || consec.includes('justifica') || consec.includes('humildad')) {
-      funcion = 'La conducta parece mantenida por refuerzo positivo de tipo social — identidad de dominancia y ausencia de consecuencias reales que la extingan.';
+      funcion = 'Parece que se repite porque le da protagonismo ante el grupo y no ha tenido consecuencias claras.';
       tecnicas = [
-        'Contrato conductual con criterios claros y observables antes de cualquier compromiso de ficha.',
-        'Extinción del patrón de justificación: no reforzar el debate cuando se justifica — respuesta neutra y redirección.',
-        'Entrenamiento en autocontrol emocional con técnica de pausa consciente y autoinstrucción positiva.',
-        'Moldeamiento gradual: reforzar diferencial cualquier conducta prosocial o de asunción de responsabilidad.',
-        'Conversación individual estructurada: establecer función incompatible con la agresión (liderazgo positivo).',
+        'Acordar con él unas normas claras por escrito antes de cualquier compromiso con el equipo.',
+        'Cuando se justifique, no entrar en discusión: respuesta tranquila y volver al ejercicio.',
+        'Practicar el autocontrol: parar, respirar y decirse una frase positiva antes de reaccionar.',
+        'Felicitar cualquier gesto de compañerismo o de asumir responsabilidad, por pequeño que sea.',
+        'Hablar con él a solas y darle un papel positivo en el grupo (por ejemplo, ayudar a los más pequeños).',
       ];
     } else if (tipo.includes('físico') || tipo.includes('agresion') || conduct.includes('agred')) {
-      funcion = 'Conducta agresiva con patrón recurrente — posible función de escape/evitación del malestar competitivo o refuerzo negativo por eliminación de la amenaza percibida.';
+      funcion = 'Reacciona con agresividad de forma repetida, probablemente cuando se siente frustrado o presionado en el juego.';
       tecnicas = [
-        'Protocolo de intervención inmediata: retirada del juego como consecuencia consistente sin negociación.',
-        'Registro ABC sistemático en cada partido — identificar antecedentes específicos que precipitan la agresión.',
-        'Entrenamiento en inoculación de estrés: exposición gradual a situaciones de presión competitiva.',
-        'Trabajo con el entrenador: señal pactada antes de que escale (intervención preventiva, no reactiva).',
-        'Valorar derivación si el patrón no cede en 3 sesiones de intervención — posible evaluación externa.',
+        'Si agrede, salir del juego siempre, sin discutir.',
+        'Anotar en cada partido qué pasa justo antes de que se enfade para anticiparse.',
+        'Practicar en los entrenamientos situaciones de presión, poco a poco, para que aprenda a controlarse.',
+        'Pactar con el entrenador una señal para avisarle antes de que vaya a más.',
+        'Si no mejora en 3 semanas, valorar con Nefta otros apoyos.',
       ];
     } else if (tipo.includes('material') || tipo.includes('compañero')) {
-      funcion = 'Conducta disruptiva puntual — evaluar si es patrón emergente o incidencia aislada ante frustración.';
+      funcion = 'Parece algo puntual; hay que ver si se repite o fue un momento de frustración.';
       tecnicas = [
-        'Técnica de economía de fichas si es patrón recurrente — refuerzo diferencial de conducta alternativa.',
-        'Reunión breve post-entrenamiento: consecuencia lógica relacionada con el tipo de conducta.',
-        'Trabajo de regulación emocional: identificación de señales internas de activación antes de la conducta.',
+        'Si se repite, usar un sistema de puntos por buen comportamiento con una pequeña recompensa.',
+        'Hablar un momento con él después del entrenamiento y acordar una consecuencia relacionada con lo que pasó.',
+        'Ayudarle a darse cuenta de cuándo se está enfadando para que pueda parar a tiempo.',
       ];
     } else {
-      funcion = 'Función conductual pendiente de análisis completo — se requiere más información del contexto antecedente.';
+      funcion = 'Todavía falta información para saber por qué ocurre.';
       tecnicas = [
-        'Completar registro ABC con al menos 3 observaciones antes de diseñar la intervención.',
-        'Entrevista individual con el jugador para identificar variables motivacionales.',
-        'Coordinación con el entrenador para observación sistemática en los próximos entrenamientos.',
+        'Anotar al menos 3 situaciones (qué pasa antes y después) antes de decidir qué hacer.',
+        'Hablar a solas con el jugador para entender qué le motiva y qué le molesta.',
+        'Coordinarse con el entrenador para observarle en los próximos entrenamientos.',
       ];
     }
 
@@ -3525,12 +3526,12 @@ function mostrarAlertaCasosGraves() {
 
     return `
       <div style="background:#F0FDF4;border-left:3px solid #065F46;border-radius:4px;padding:10px 14px;margin-top:10px">
-        <div style="font-size:10px;font-weight:800;color:#065F46;margin-bottom:6px">ANÁLISIS FUNCIONAL Y PROPUESTA DE INTERVENCIÓN</div>
+        <div style="font-size:10px;font-weight:800;color:#065F46;margin-bottom:6px">QUÉ PUEDE ESTAR PASANDO Y QUÉ HACER</div>
         ${urgencia}
         <div style="font-size:11px;color:#374151;margin-bottom:8px;line-height:1.6">
-          <b style="color:#065F46">Hipótesis funcional:</b> ${funcion}
+          <b style="color:#065F46">Qué puede estar pasando:</b> ${funcion}
         </div>
-        <div style="font-size:10px;font-weight:700;color:#065F46;margin-bottom:5px">TÉCNICAS RECOMENDADAS:</div>
+        <div style="font-size:10px;font-weight:700;color:#065F46;margin-bottom:5px">RECOMENDACIONES:</div>
         ${tecnicas.map((t,i) => `<div style="font-size:11px;color:#374151;padding:4px 8px;background:#fff;border-radius:4px;margin-bottom:3px;border-left:2px solid #A7F3D0">
           <b>${i+1}.</b> ${t}
         </div>`).join('')}
@@ -3572,7 +3573,7 @@ function mostrarAlertaCasosGraves() {
             </div>
           </div>
           ${r.antecedente?`<div style="padding:7px 10px;background:#DBEAFE;border-left:3px solid #2563EB;border-radius:4px;margin-bottom:5px"><b style="color:#1d4ed8;font-size:9px">A — ANTECEDENTE</b><br>${r.antecedente}</div>`:''}
-          ${r.conducta?`<div style="padding:7px 10px;background:#FEE2E2;border-left:3px solid #991B1B;border-radius:4px;margin-bottom:5px"><b style="color:#991B1B;font-size:9px">B — CONDUCTA</b><br>${r.conducta}</div>`:''}
+          ${r.conducta?`<div style="padding:7px 10px;background:#FEE2E2;border-left:3px solid #991B1B;border-radius:4px;margin-bottom:5px"><b style="color:#991B1B;font-size:9px">B — QUÉ PASÓ</b><br>${r.conducta}</div>`:''}
           ${r.consecuencia?`<div style="padding:7px 10px;background:#FEF3C7;border-left:3px solid #B45309;border-radius:4px;margin-bottom:5px"><b style="color:#B45309;font-size:9px">C — CONSECUENCIA</b><br>${r.consecuencia}</div>`:''}
           ${r.accion?`<div style="padding:7px 10px;background:#F0FDF4;border-left:3px solid #065F46;border-radius:4px;margin-bottom:5px"><b style="color:#065F46;font-size:9px">ACCIÓN TOMADA</b><br>${r.accion}</div>`:''}
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;margin-bottom:2px">
@@ -4016,7 +4017,7 @@ function generarEstadisticas() {
     return '<tr style="background:'+bg+'"><td style="padding:6px 10px;font-weight:600">'+(i+1)+'. '+jug+'</td><td style="padding:6px 10px;text-align:center;background:'+asCol+'">'+asTxt+'</td><td style="padding:6px 10px;text-align:center">'+(c||'—')+'</td><td style="padding:6px 10px;text-align:center;font-weight:700;color:#1a5c2e">'+m+'</td></tr>';
   }).join('');
   var filaTotal = '<tr style="background:#e8f5ed"><td style="padding:6px 10px;font-weight:700">TOTAL</td><td style="padding:6px 10px;text-align:center;font-weight:700">'+presentes+'/'+J.length+' ('+pctAsist+'%)</td><td style="padding:6px 10px;text-align:center">—</td><td style="padding:6px 10px;text-align:center;font-weight:700;color:#1a5c2e">'+mediaValGrupo+'/5</td></tr>';
-  var tablaConvHTML = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="background:#1a5c2e;color:#fff;padding:7px 10px;text-align:left">Jugador</th><th style="background:#1a5c2e;color:#fff;padding:7px 10px;text-align:center">Asistencia</th><th style="background:#1a5c2e;color:#fff;padding:7px 10px;text-align:center">Conducta</th><th style="background:#1a5c2e;color:#fff;padding:7px 10px;text-align:center">⭐ Media</th></tr></thead><tbody>'+filas+filaTotal+'</tbody></table>';
+  var tablaConvHTML = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="background:#1a5c2e;color:#fff;padding:7px 10px;text-align:left">Jugador</th><th style="background:#1a5c2e;color:#fff;padding:7px 10px;text-align:center">Asistencia</th><th style="background:#1a5c2e;color:#fff;padding:7px 10px;text-align:center">Comportamiento</th><th style="background:#1a5c2e;color:#fff;padding:7px 10px;text-align:center">⭐ Media</th></tr></thead><tbody>'+filas+filaTotal+'</tbody></table>';
   document.getElementById('est-conv-tabla').innerHTML = tablaConvHTML;
 
   // ── Destruir charts previos ───────────────────────────────────────────────
