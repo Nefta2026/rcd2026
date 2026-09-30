@@ -223,7 +223,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <span class="eq-icon"><span class="escudo-mini"></span></span>
         <div class="eq-info">
           <div class="eq-name">Alevín A</div>
-          <div class="eq-detail">1ª Regional · Mar/Mié/Jue · Campo G</div>
+          <div class="eq-detail">Entrenador: Diego · 1ª Regional · Mar/Mié/Jue · Campo G</div>
         </div><span class="eq-arrow">›</span>
       </button>
       <button class="eq-btn" onclick="abrirEquipo('alevinB')">
@@ -988,7 +988,7 @@ const EQUIPOS = {
   },
   alevinA:    {
     nombre:'Alevín A', detalle:'1ª Regional Mallorca', id:'AlevinA',
-    entrenador:'—', jugadores:[],
+    entrenador:'Diego', jugadores:[],
     horarios:'Mar · Campo G · 17:30–19:00 | Mié · Campo G · 17:30–19:00 | Jue · Campo G · 17:30–19:00'
   },
   alevinB:    {
@@ -1013,7 +1013,7 @@ const EQUIPOS = {
   benjaminC:  {
     nombre:'Benjamín C', detalle:'Benjamines Mallorca', id:'BenjaminC',
     entrenador:'Javier P.', password:'1d97a7026ed3005fc8ec7525276f9512d28091653550177c9e1f78975a3e78b2',
-    jugadores:['Javi V.','Erik T.','Andreas C. M.','Cristian D.','Maddox M.','Mattias M.','Adam C.','Salah A. J. W.','Lorenzo W.','José Luis V. C.','Martín A.','Adrián M.','Oliver D. A.','Antonio S.'],
+    jugadores:['Javi V.','Erik T.','Andreas C. M.','Cristian D.','Maddox M.','Mattias M.','Adam C.','Salah A. J. W.','Lorenzo W.','José Luis V. C.','Martín A.','Adrián M.','Antonio S.'],
     horarios:'Mar · Campo C · 17:30–19:00 | Jue · Campo B · 17:30–19:00 | Vie · Sin campo · 17:30–19:00'
   },
   benjaminForm:{
@@ -2279,7 +2279,7 @@ function pintarIncidencias(data) {
       todas.push({ t, r, id, dec: (_incidEstado[id] || {}).estado || '' });
     }));
     todas.sort((a,b) => String(b.r.Fecha||b.r.Timestamp||'').localeCompare(String(a.r.Fecha||a.r.Timestamp||'')));
-    const lista = todas.filter(x => !x.dec), cerradas = todas.filter(x => x.dec);
+    const lista = todas.filter(x => !cerrada(x.dec)), cerradas = todas.filter(x => cerrada(x.dec));
     const htmlCerradas = cerradas.length
       ? '<div style="font-weight:800;font-size:12px;margin:10px 0 4px;color:#374151">Incidencias cerradas:</div>' +
         cerradas.map(x => `<div style="font-size:11px;margin-bottom:3px"><b>${escI(x.r['Jugador'] || x.r['Jugador relacionado'] || 'General')}</b> · ${titulo[x.t]}: ${escI(x.r['Tipo'] || x.r['Tipo conducta'] || '')} (${escI(String(x.r['Fecha']||'').slice(0,10))}) &nbsp;${chipDecision(x.dec)}</div>`).join('')
@@ -2566,10 +2566,10 @@ function generarGraficosPartido(aviso) {
     options: { plugins: { title: titulo('Participación en el partido'), legend: { position: 'bottom' } } } });
 
   // 2. Estado de las incidencias del equipo (entreno + partido)
-  let pend = 0, res = 0, nores = 0;
-  J.forEach(j => detallesJugador(j).forEach(d => { if (d.decision === 'Resuelta') res++; else if (d.decision === 'No resuelta') nores++; else pend++; }));
+  let pend = 0, res = 0, nores = 0, proc = 0;
+  J.forEach(j => detallesJugador(j).forEach(d => { if (d.decision === 'Resuelta') res++; else if (d.decision === 'No resuelta') nores++; else if (d.decision === 'En proceso') proc++; else pend++; }));
   nuevoGrafico('gp-estado', { type: 'doughnut',
-    data: { labels: ['Pendientes', 'Resueltas', 'No resueltas'], datasets: [{ data: [pend, res, nores], backgroundColor: [AMB, VERDE, ROJO] }] },
+    data: { labels: ['Pendientes', 'En proceso', 'Resueltas', 'No resueltas'], datasets: [{ data: [pend, proc, res, nores], backgroundColor: [GRIS, AMB, VERDE, ROJO] }] },
     options: { plugins: { title: titulo('Estado de las incidencias'), legend: { position: 'bottom' } } } });
 
   // 3. Actuación por jugador
@@ -2760,20 +2760,24 @@ function detallesJugador(jug) {
 
 function chipDecision(dec) {
   if (!dec) return '';
-  const ok = dec === 'Resuelta';
-  return `<span style="background:${ok?'#D1FAE5':'#FEE2E2'};color:${ok?'#065F46':'#991B1B'};border-radius:4px;padding:1px 7px;font-size:10px;font-weight:800">${ok?'✅ Resuelta':'❌ No resuelta'}</span>`;
+  const e = dec === 'Resuelta' ? ['#D1FAE5','#065F46','✅ Resuelta'] : dec === 'En proceso' ? ['#FEF3C7','#92400E','🔄 En proceso'] : ['#FEE2E2','#991B1B','❌ No resuelta'];
+  return `<span style="background:${e[0]};color:${e[1]};border-radius:4px;padding:1px 7px;font-size:10px;font-weight:800">${e[2]}</span>`;
 }
+// «En proceso» sigue apareciendo entre las pendientes (con su etiqueta); Resuelta y No resuelta se cierran
+function cerrada(dec) { return dec === 'Resuelta' || dec === 'No resuelta'; }
 function botonesIncidencia(d, jug) {
   if (!isNefta) return '';
   const idJs = d.id.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-  return `<div style="display:flex;gap:6px;margin-top:6px">
+  const enProc = (_incidEstado[d.id] || {}).estado === 'En proceso';
+  return `${enProc ? '<div style="margin-top:6px">' + chipDecision('En proceso') + '</div>' : ''}<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
     <button onclick="event.stopPropagation(); marcarIncidencia('${idJs}','Resuelta')" style="flex:1;background:#065F46;color:#fff;border:none;border-radius:6px;padding:7px;font-weight:800;font-size:11px;cursor:pointer">✅ Resuelta</button>
+    <button onclick="event.stopPropagation(); marcarIncidencia('${idJs}','En proceso')" style="flex:1;background:${enProc?'#B45309':'#fff'};color:${enProc?'#fff':'#B45309'};border:2px solid #B45309;border-radius:6px;padding:7px;font-weight:800;font-size:11px;cursor:pointer">🔄 En proceso</button>
     <button onclick="event.stopPropagation(); marcarIncidencia('${idJs}','No resuelta')" style="flex:1;background:#fff;color:#991B1B;border:2px solid #991B1B;border-radius:6px;padding:7px;font-weight:800;font-size:11px;cursor:pointer">❌ No resuelta</button>
   </div>`;
 }
 function htmlDetalles(dets, nPautas) {
   if (!dets.length) return '';
-  return dets.map(d => d.decision
+  return dets.map(d => cerrada(d.decision)
     ? `<div style="border:1px solid #E5E7EB;border-radius:6px;padding:6px 9px;margin-top:6px;background:#F9FAFB;font-size:11px">
         ⚡ <b>${d.titulo}</b> · ${escI(d.tipo)} · ${d.fecha}${d.grav?' · G'+escI(d.grav):''} &nbsp;${chipDecision(d.decision)}</div>`
     : `<div style="border:1px solid #FECACA;border-radius:6px;padding:7px 9px;margin-top:6px;background:#FFFBFB">
@@ -2794,7 +2798,7 @@ function actualizarRecomendacion() {
     box.innerHTML = 'Los datos recogidos esta semana serán revisados por el psicólogo del club. Las incidencias registradas se comentarán durante la siguiente semana para poder estudiar cada caso con la información completa. Si hay algún asunto urgente, contacta directamente con Neftalí Martínez.';
     return;
   }
-  const pend = items.filter(x => !x.d.decision), cerr = items.filter(x => x.d.decision);
+  const pend = items.filter(x => !cerrada(x.d.decision)), cerr = items.filter(x => cerrada(x.d.decision));
   box.innerHTML =
     (pend.length
       ? '<div style="font-weight:800;margin-bottom:6px">Pautas para el entrenador según las incidencias pendientes:</div>' +
@@ -2817,7 +2821,7 @@ function idIncidencia(ficha, r) {
 async function marcarIncidencia(id, estado) {
   const reg = _incidRegistro[id]; if (!reg) return;
   const det = { ficha: reg.ficha, r: reg.r }, jug = reg.jug || reg.r.Jugador || 'General';
-  if (!confirm('¿Marcar esta incidencia de ' + jug + ' como ' + estado.toUpperCase() + '? Dejará de aparecer en las pautas pendientes.')) return;
+  if (!confirm('¿Marcar esta incidencia de ' + jug + ' como ' + estado.toUpperCase() + '?' + (cerrada(estado) ? ' Dejará de aparecer en las pautas pendientes.' : ' Seguirá visible hasta que se cierre.'))) return;
   try {
     const res = await fetch(GAS, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ ficha: 'INCID_ESTADO', clave: _clNefta, id: id, estado: estado, equipoId: equipoActual.id,
@@ -2825,7 +2829,7 @@ async function marcarIncidencia(id, estado) {
     const d = await res.json();
     if (!d.ok) throw new Error(d.error || 'Error');
     _incidEstado[id] = { estado: estado };
-    toast(estado === 'Resuelta' ? '✅ Incidencia marcada como resuelta' : '❌ Incidencia marcada como no resuelta');
+    toast(estado === 'Resuelta' ? '✅ Incidencia marcada como resuelta' : estado === 'En proceso' ? '🔄 Incidencia marcada en proceso' : '❌ Incidencia marcada como no resuelta');
   } catch(e) {
     toast('⚠️ No se pudo guardar el estado. Inténtalo de nuevo.', true);
     return;
@@ -3813,7 +3817,7 @@ ${(()=>{ const f=J.map(j=>({j,l:faltasJugador(j)})).filter(x=>x.l.length); if(!f
   f.map((x,i)=>{const nj=x.l.filter(y=>y.nj).length;const bg=i%2?'#F3F4F6':'#FAFAF9';return `<tr><td style="padding:5px 8px;font-size:10px;background:${bg}"><b>${escI(x.j)}</b></td><td style="padding:5px 8px;text-align:center;font-size:10px;background:${bg}">${x.l.length-nj}</td><td style="padding:5px 8px;text-align:center;font-size:10px;background:${bg};color:${nj?'#991B1B':'#6B7280'}">${nj}</td><td style="padding:5px 8px;font-size:10px;background:${bg}">${x.l.map(y=>fechaCorta(y.f)+' '+(y.nj?'NJ':'J')+(y.motivo?' ('+escI(y.motivo)+')':'')).join(' · ')}</td></tr>`;}).join('')+`</tbody></table>`; })()}
 ${(()=>{ const it=[]; J.forEach(j=>detallesJugador(j).forEach(d=>it.push({j,d}))); if(!it.length) return '';
   return `<div class="sec">INCIDENCIAS Y PAUTAS PARA EL ENTRENADOR</div><table><thead><tr><th style="text-align:left">Jugador</th><th style="text-align:left">Incidencia</th><th style="text-align:left">Pauta</th></tr></thead><tbody>`+
-  it.map(({j,d},i)=>`<tr><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};vertical-align:top"><b>${escI(j)}</b></td><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};vertical-align:top">${d.titulo}: <b>${escI(d.tipo)}</b>${d.decision?' · <b style="color:'+(d.decision==='Resuelta'?'#065F46':'#991B1B')+'">'+(d.decision==='Resuelta'?'✅ Resuelta':'❌ No resuelta')+'</b>':''}<br><span style="color:#6B7280">${d.fecha}${d.minuto?' · min '+escI(d.minuto):''}${d.grav?' · G'+escI(d.grav):''}${d.estado?' · '+escI(d.estado):''}</span></td><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};color:#064E3B;vertical-align:top"><b>🎯</b> ${escI(d.po.objetivo)}<br><b>⚽ Jugador:</b> ${d.po.jugador.slice(0,2).map(escI).join(' ')}<br><b>🧑‍🏫 Entrenador:</b> ${d.po.entrenador.slice(0,2).map(escI).join(' ')}<br><b>📏</b> ${escI(d.po.medida)}</td></tr>`).join('')+`</tbody></table>`; })()}
+  it.map(({j,d},i)=>`<tr><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};vertical-align:top"><b>${escI(j)}</b></td><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};vertical-align:top">${d.titulo}: <b>${escI(d.tipo)}</b>${d.decision?' · <b style="color:'+(d.decision==='Resuelta'?'#065F46':d.decision==='En proceso'?'#92400E':'#991B1B')+'">'+(d.decision==='Resuelta'?'✅ Resuelta':d.decision==='En proceso'?'🔄 En proceso':'❌ No resuelta')+'</b>':''}<br><span style="color:#6B7280">${d.fecha}${d.minuto?' · min '+escI(d.minuto):''}${d.grav?' · G'+escI(d.grav):''}${d.estado?' · '+escI(d.estado):''}</span></td><td style="padding:5px 8px;font-size:10px;background:${i%2?'#F3F4F6':'#FAFAF9'};color:#064E3B;vertical-align:top"><b>🎯</b> ${escI(d.po.objetivo)}<br><b>⚽ Jugador:</b> ${d.po.jugador.slice(0,2).map(escI).join(' ')}<br><b>🧑‍🏫 Entrenador:</b> ${d.po.entrenador.slice(0,2).map(escI).join(' ')}<br><b>📏</b> ${escI(d.po.medida)}</td></tr>`).join('')+`</tbody></table>`; })()}
 <div class="msg">💚 Los datos recogidos serán revisados por el psicólogo del club. Las incidencias se comentarán la siguiente semana.<br><br><b style="font-size:13px">¡¡ VAMOS VERDES !!</b></div>
 <div class="pie"><span>RCD Santa Ponça · Psicología Deportiva · B-03305</span><span>Neftalí Martínez Arredondo</span><span>Temporada 2026/2027</span></div>
 <div class="lopd">${lopd}</div>
