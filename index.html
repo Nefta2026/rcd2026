@@ -266,11 +266,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <div class="eq-detail">Mar/Jue/Vie · Entrenador: Guyu</div>
         </div><span class="eq-arrow">›</span>
       </button>
-      <button class="eq-btn" onclick="abrirEquipo('benjaminB')">
+      <button class="eq-btn" onclick="abrirEquipo('benjaminB')" style="border-left:3px solid var(--verde)">
         <span class="eq-icon"><span class="escudo-mini"></span></span>
         <div class="eq-info">
-          <div class="eq-name">Benjamín B</div>
-          <div class="eq-detail">1ª Regional · Lun/Mié/Jue</div>
+          <div class="eq-name">Benjamín B <span style="font-size:10px;background:var(--verde-p);color:var(--verde);padding:1px 6px;border-radius:10px;font-weight:700;margin-left:4px">✓ Configurado</span></div>
+          <div class="eq-detail">Entrenador: Miguel A. · 10 jugadores · Lun/Mié/Jue</div>
         </div><span class="eq-arrow">›</span>
       </button>
       <button class="eq-btn" onclick="abrirEquipo('benjaminC')" style="border-left:3px solid var(--verde)">
@@ -278,6 +278,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="eq-info">
           <div class="eq-name">Benjamín C <span style="font-size:10px;background:var(--verde-p);color:var(--verde);padding:1px 6px;border-radius:10px;font-weight:700;margin-left:4px">✓ Configurado</span></div>
           <div class="eq-detail">Mar/Jue/Vie · Entrenador: Javier P.</div>
+        </div><span class="eq-arrow">›</span>
+      </button>
+      <button class="eq-btn" onclick="abrirEquipo('benjaminD')">
+        <span class="eq-icon"><span class="escudo-mini"></span></span>
+        <div class="eq-info">
+          <div class="eq-name">Benjamín D</div>
+          <div class="eq-detail">Entrenador: Miguel A. · Pendiente de plantilla</div>
         </div><span class="eq-arrow">›</span>
       </button>
       <button class="eq-btn" onclick="abrirEquipo('benjaminForm')">
@@ -1058,7 +1065,7 @@ const EQUIPOS = {
   },
   benjaminB:  {
     nombre:'Benjamín B', detalle:'1ª Regional Mallorca', id:'BenjaminB',
-    entrenador:'—', jugadores:[],
+    entrenador:'Miguel A.', jugadores:['Dibu','Simeon','Abraham','Len','Leon','Matvei','Matias','Sebastián','Enzo','Nahuel'],
     horarios:'Lun · Campo B · 17:30–19:00 | Mié · Campo A · 17:30–19:00 | Jue · Campo A · 17:30–19:00'
   },
   benjaminC:  {
@@ -1066,6 +1073,11 @@ const EQUIPOS = {
     entrenador:'Javier P.', password:'1d97a7026ed3005fc8ec7525276f9512d28091653550177c9e1f78975a3e78b2',
     jugadores:['Javi V.','Erik T.','Andreas C. M.','Cristian D.','Maddox M.','Mattias M.','Adam C.','Salah A. J. W.','Lorenzo W.','José Luis V. C.','Martín A.','Adrián M.','Antonio S.'],
     horarios:'Mar · Campo C · 17:30–19:00 | Jue · Campo B · 17:30–19:00 | Vie · Sin campo · 17:30–19:00'
+  },
+  benjaminD:  {
+    nombre:'Benjamín D', detalle:'Benjamines Mallorca', id:'BenjaminD',
+    entrenador:'Miguel A.', password:'f0505f52a8e3f48d749c2fdad77b38602c3a6c65f1364b08aa00b812738d61bf', jugadores:[],
+    horarios:''
   },
   benjaminForm:{
     nombre:'Benjamín Formativo', detalle:'Formativo', id:'BenjaminForm',
@@ -1865,12 +1877,22 @@ function generarConv() {
   })();
 
   // ── Normas ────────────────────────────────────────────────────────────────
-  const nJ = ['Con el árbitro hablan solo el entrenador y los capitanes.',
+  const mayores = esEquipoMayor();
+  const nJ = mayores ? [
+    'Con el árbitro solo hablan los capitanes.',
+    'No protestar las decisiones del árbitro: pensar en la siguiente jugada.',
+    'Compañerismo: apoyar y animar a los compañeros, en el campo y en el vestuario.',
+    'Compromiso con los compañeros y con el club: asistir, avisar con tiempo y entrenar al máximo.',
+    'Respeto al rival, al árbitro y al cuerpo técnico, ganemos o perdamos.',
+    'Representamos al club dentro y fuera del campo, también en redes sociales.'] : ['Con el árbitro hablan solo el entrenador y los capitanes.',
     'Respetar los turnos de palabra.','Escuchar al entrenador.',
     'Preguntar cuando algo no se ha entendido.',
     'Ser solidarios en el juego: presionar, ayudar, cubrir espacios.',
     'Ducha obligatoria después de cada entrenamiento y partido.'];
-  const nF = ['Reforzad el esfuerzo, no solo el resultado.',
+  const nF = mayores ? [
+    'Desde la grada, solo ánimo positivo.', 'Respetar las decisiones del árbitro y del entrenador.',
+    'Aplaudir también al rival.', 'Apoyar su compromiso: puntualidad y asistencia.',
+    'Valorar el esfuerzo y la actitud, no solo el resultado.', 'Dejar las indicaciones técnicas al cuerpo técnico.'] : ['Reforzad el esfuerzo, no solo el resultado.',
     'Desde la grada, solo ánimo positivo.','Aplaudir también al rival.',
     'Reforzad en casa lo que se trabaja en el campo.',
     'Puntualidad y compromiso.','El objetivo es que disfruten y crezcan.'];
@@ -1945,8 +1967,8 @@ function generarConv() {
         <div style="font-size:11px;margin-bottom:3px">👕 <b>Equipación completa</b> del club (camiseta, pantalón, medias y botas).</div>
         <div style="font-size:11px;margin-bottom:3px">🦵 <b>Espinilleras obligatorias</b> para todos los jugadores.</div>
         <div style="font-size:11px;margin-bottom:3px">🧤 <b>Guantes de portero</b> (porteros): traerlos siempre al partido.</div>
-        <div style="font-size:11px;margin-bottom:3px">🩴 <b>Chanclas obligatorias</b> para el vestuario y la zona de ducha.</div>
-        <div style="font-size:11px;margin-bottom:3px">🚿 <b>Ducha obligatoria</b> después del partido. Traer toalla propia.</div>
+        ${mayores ? '' : '<div style="font-size:11px;margin-bottom:3px">🩴 <b>Chanclas obligatorias</b> para el vestuario y la zona de ducha.</div>'}
+        <div style="font-size:11px;margin-bottom:3px">🚿 <b>${mayores ? 'Ducha después del partido' : 'Ducha obligatoria'}</b>${mayores ? '.' : ' después del partido. Traer toalla propia.'}</div>
         <div style="font-size:11px">⏰ <b>Concentración a las ${conc}</b> — 1 hora antes del partido. La puntualidad es parte del compromiso deportivo.</div>
       </div>
 
@@ -2744,6 +2766,12 @@ function resumenJuego(jug) {
   const v = Object.values(p);
   return { pj: v.filter(x => x.jugado).length, convocado: v.length,
            cuartos: v.reduce((s, x) => s + x.cuartos, 0), minutos: v.reduce((s, x) => s + x.minutos, 0) };
+}
+
+// Equipos formativos mayores: normas adaptadas a la edad
+function esEquipoMayor() {
+  const id = (equipoActual && equipoActual.id) || '';
+  return ['InfantilF11', 'Cadete', 'Juvenil', 'Amateur'].indexOf(id) >= 0;
 }
 
 function calcularStatsPartido() {
