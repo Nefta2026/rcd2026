@@ -241,11 +241,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <div class="eq-group">
       <div class="eq-group-label">⚽ Alevín</div>
-      <button class="eq-btn" onclick="abrirEquipo('alevinA')">
+      <button class="eq-btn" onclick="abrirEquipo('alevinA')" style="border-left:3px solid var(--verde)">
         <span class="eq-icon"><span class="escudo-mini"></span></span>
         <div class="eq-info">
-          <div class="eq-name">Alevín A</div>
-          <div class="eq-detail">Entrenador: Diego · 1ª Regional · Mar/Mié/Jue · Campo G</div>
+          <div class="eq-name">Alevín A <span style="font-size:10px;background:var(--verde-p);color:var(--verde);padding:1px 6px;border-radius:10px;font-weight:700;margin-left:4px">✓ Configurado</span></div>
+          <div class="eq-detail">Entrenador: Diego · 9 jugadores · Mar/Mié/Jue · Campo G</div>
         </div><span class="eq-arrow">›</span>
       </button>
       <button class="eq-btn" onclick="abrirEquipo('alevinB')">
@@ -394,7 +394,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
         </div>
         <div class="sep">Jugadores</div>
-        <div style="overflow-x:auto"><table class="jt"><thead><tr><th style="text-align:left;padding-left:7px">Jugador</th><th>Asistencia</th><th>Motivo</th><th>Comportamiento</th></tr></thead><tbody id="tb-asistencia"></tbody></table></div>
+        <div style="overflow-x:auto"><table class="jt"><thead><tr><th style="text-align:left;padding-left:7px">Jugador</th><th>Asistencia</th><th>Motivo</th></tr></thead><tbody id="tb-asistencia"></tbody></table></div>
         <div class="field" style="margin-top:10px"><label>Observaciones</label><textarea id="as-obs" placeholder="Objetivos, incidencias, dinámica del grupo..."></textarea></div>
         <button class="btn btn-v" onclick="guardar('asistencia')" id="btn-as">💾 Guardar asistencia</button>
       </div>
@@ -1046,7 +1046,7 @@ const EQUIPOS = {
   },
   alevinA:    {
     nombre:'Alevín A', detalle:'1ª Regional Mallorca', id:'AlevinA',
-    entrenador:'Diego', jugadores:[],
+    entrenador:'Diego', password:'e40bbf93c8e806918880f0918eab2173b8ae539f8d50bf7f2ca4d33f9cd42caa', jugadores:['Amarjot','Etham','Nicos','Ismael','Filippo','Amir','Marc','Dylan','Gurkirat'],
     horarios:'Mar · Campo G · 17:30–19:00 | Mié · Campo G · 17:30–19:00 | Jue · Campo G · 17:30–19:00'
   },
   alevinB:    {
